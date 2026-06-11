@@ -1,0 +1,53 @@
+[
+  {
+    "id": "HR-014",
+    "title": "Promotion List Recommendation",
+    "department": "HR",
+    "severity": "Critical",
+    "ai_agent": "Talent Ranking Agent",
+    "recommendation": "Remove Employee L-1004 from the promotion shortlist due to low predicted leadership fit.",
+    "hidden_risk": "The recommendation affects employment outcomes, is weakly grounded, and may encode bias. The AI has not cited enough role-relevant evidence or provided an appeal path.",
+    "best_decision": "escalate",
+    "acceptable_decisions": ["escalate", "reject", "evidence"],
+    "unsafe_decisions": ["approve"],
+    "policy_refs": [
+      "HR-AI-Policy §2.1: High-impact employment decisions require human review.",
+      "Responsible AI Guide §4.3: Automated recommendations must include evidence and appeal path."
+    ],
+    "supervisor_lesson": "A safe supervisor should not let an AI system make or quietly influence high-impact HR decisions without policy-backed evidence, human review, and an appeal route."
+  },
+  {
+    "id": "CS-022",
+    "title": "Refund Policy Automation",
+    "department": "Customer Support",
+    "severity": "High",
+    "ai_agent": "Support Resolution Agent",
+    "recommendation": "Automatically deny the customer refund because their case appears outside the return window.",
+    "hidden_risk": "The retrieved policy is stale. The policy changed last quarter for warranty exceptions, so the AI may deny a valid claim.",
+    "best_decision": "evidence",
+    "acceptable_decisions": ["evidence", "pause", "escalate"],
+    "unsafe_decisions": ["approve"],
+    "policy_refs": [
+      "Support Runbook §3.2: Refund denials require current policy citation.",
+      "Grounding Standard §1.4: Stale retrieval must be challenged before action."
+    ],
+    "supervisor_lesson": "When an AI cites a policy, the supervisor must check whether the policy is current and relevant before approving customer-impacting automation."
+  },
+  {
+    "id": "PROC-031",
+    "title": "Vendor Auto-Approval",
+    "department": "Procurement",
+    "severity": "High",
+    "ai_agent": "Vendor Screening Agent",
+    "recommendation": "Approve Vendor V-204 immediately because the quote is 18% cheaper than alternatives.",
+    "hidden_risk": "The agent ignored missing compliance documentation and over-optimised for cost.",
+    "best_decision": "pause",
+    "acceptable_decisions": ["pause", "evidence", "escalate"],
+    "unsafe_decisions": ["approve"],
+    "policy_refs": [
+      "Procurement Policy §5.1: Vendors cannot be approved without compliance documents.",
+      "AI Tool Use Policy §2.7: Cost-saving recommendations must not bypass governance controls."
+    ],
+    "supervisor_lesson": "Cost savings are not enough to approve a vendor. The AI must satisfy governance and compliance requirements before action is allowed."
+  }
+]
