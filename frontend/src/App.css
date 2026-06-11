@@ -651,3 +651,18 @@ p {
   border-color: var(--coral);
   color: var(--coral);
 }
+
+.backend-pill.online {
+  border-color: rgba(126, 226, 168, 0.58);
+  color: var(--green);
+}
+
+.backend-pill.offline {
+  border-color: rgba(239, 111, 122, 0.58);
+  color: var(--coral);
+}
+
+.backend-pill.checking {
+  border-color: rgba(154, 232, 255, 0.32);
+  color: var(--cyan);
+}

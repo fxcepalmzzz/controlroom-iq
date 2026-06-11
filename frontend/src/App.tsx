@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import {
   AlertTriangle,
   Brain,
@@ -13,27 +13,11 @@ import {
   CircleSlash,
 } from "lucide-react";
 import "./App.css";
+import { checkBackendHealth, fetchBackendDrills, type Decision, type Drill } from "./api";
 
-type Decision = "approve" | "reject" | "evidence" | "escalate" | "pause";
 
-type Drill = {
-  id: string;
-  title: string;
-  department: string;
-  severity: "Low" | "Medium" | "High" | "Critical";
-  aiAgent: string;
-  recommendation: string;
-  hiddenRisk: string;
-  bestDecision: Decision;
-  acceptableDecisions: Decision[];
-  unsafeDecisions: Decision[];
-  policyRefs: string[];
-  learningGoal: string;
-  supervisorLesson: string;
-  managerImpact: string;
-};
 
-const drills: Drill[] = [
+const fallbackDrills: Drill[] = [
   {
     id: "HR-014",
     title: "Promotion List Recommendation",
@@ -168,9 +152,32 @@ function getResultText(drill: Drill, decision: Decision | null) {
 }
 
 function App() {
+  const [drills, setDrills] = useState<Drill[]>(fallbackDrills);
+  const [backendStatus, setBackendStatus] = useState<"checking" | "online" | "offline">(
+    "checking"
+  );
   const [activeDrillId, setActiveDrillId] = useState(drills[0].id);
   const [selectedDecision, setSelectedDecision] = useState<Decision | null>(null);
   const [completed, setCompleted] = useState<Record<string, number>>({});
+  
+  useEffect(() => {
+    async function loadBackendData() {
+      try {
+        await checkBackendHealth();
+        const backendDrills = await fetchBackendDrills();
+
+        if (backendDrills.length > 0) {
+          setDrills(backendDrills);
+          setActiveDrillId(backendDrills[0].id);
+          setBackendStatus("online");
+        }
+      } catch {
+        setBackendStatus("offline");
+      }
+    }
+
+    loadBackendData();
+  }, []);
 
   const activeDrill = useMemo(
     () => drills.find((drill) => drill.id === activeDrillId) ?? drills[0],
@@ -235,6 +242,9 @@ function App() {
             <span className="pill">Foundry IQ</span>
             <span className="pill">Synthetic Data Only</span>
             <span className="pill">Responsible AI</span>
+            <span className={`pill backend-pill ${backendStatus}`}>
+              Backend {backendStatus}
+            </span>
           </div>
         </div>
 
