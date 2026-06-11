@@ -1,35 +1,36 @@
 from __future__ import annotations
 
+from typing import Any
+
 
 HIGH_IMPACT_DEPARTMENTS = {"HR", "Procurement", "IT", "Security", "Compliance"}
 HIGH_SEVERITY_LEVELS = {"High", "Critical"}
 
 
-def critique_risk(drill: dict) -> dict:
+def critique_risk(drill: dict[str, Any]) -> dict[str, Any]:
     """
-    Synthetic risk critic agent.
+    Risk Critic Agent.
 
     Reviews the AI recommendation and drill metadata for supervision risks.
-    This is intentionally deterministic for the hackathon demo so results are
-    explainable and stable.
+    This deterministic critic makes the demo explainable and stable.
     """
     department = drill.get("department", "Unknown")
     severity = drill.get("severity", "Medium")
     hidden_risk = drill.get("hidden_risk", "No hidden risk provided.")
     recommendation = drill.get("recommendation", "")
 
-    risk_flags = []
+    risk_flags: list[str] = []
 
     if severity in HIGH_SEVERITY_LEVELS:
         risk_flags.append("High-severity workflow requires stronger human review.")
 
     if department in HIGH_IMPACT_DEPARTMENTS:
         risk_flags.append(
-            f"{department} decisions can create governance, compliance, or fairness risk."
+            f"{department} decisions can create governance, compliance, fairness, or security risk."
         )
 
     if "automatically" in recommendation.lower() or "immediately" in recommendation.lower():
-        risk_flags.append("Recommendation appears to push fast automation before review.")
+        risk_flags.append("Recommendation pushes fast automation before enough human review.")
 
     if "stale" in hidden_risk.lower():
         risk_flags.append("Evidence may be stale and should be challenged.")

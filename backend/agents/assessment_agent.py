@@ -1,10 +1,20 @@
 from __future__ import annotations
 
+from typing import Any
+
 from agents.evidence_grounding_agent import ground_evidence
 from agents.risk_critic_agent import critique_risk
 
 
-def assess_decision(drill: dict, decision: str):
+def assess_decision(drill: dict[str, Any], decision: str) -> dict[str, Any]:
+    """
+    Assessment Agent.
+
+    Scores a human supervisor's decision using:
+    - drill rubric
+    - grounded evidence
+    - risk critique
+    """
     best_decision = drill["best_decision"]
     acceptable = drill["acceptable_decisions"]
     unsafe = drill["unsafe_decisions"]
