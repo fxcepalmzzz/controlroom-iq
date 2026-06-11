@@ -60,7 +60,7 @@ def run_supervision_drill(drill: dict[str, Any], decision: str) -> dict[str, Any
         ],
         "human_in_the_loop": True,
         "synthetic_data_only": True,
-        "microsoft_iq_layer": "Foundry IQ boundary with local synthetic fallback",
+        "microsoft_iq_layer": "Microsoft Foundry IQ agent with local synthetic fallback",
     }
 
     return assessment

@@ -417,14 +417,23 @@ function App() {
           </div>
 
           <p className="muted">
-            Synthetic policy references retrieved by the Evidence Grounding Agent.
+            {assessment?.evidence?.mode === "foundry_iq_agent"
+              ? "Microsoft Foundry IQ evidence retrieved by the Evidence Grounding Agent."
+              : "Synthetic policy references retrieved by the Evidence Grounding Agent."}
           </p>
 
-          {activeDrill.policyRefs.map((ref) => (
-            <div className="evidence-card" key={ref}>
-              {ref}
-            </div>
-          ))}
+          {(assessment?.evidence?.grounded_references ?? []).length > 0
+            ? assessment?.evidence?.grounded_references.map((ref) => (
+                <div className="evidence-card" key={`${ref.source}-${ref.excerpt}`}>
+                  <strong>{ref.source}</strong>
+                  <p>{ref.excerpt}</p>
+                </div>
+              ))
+            : activeDrill.policyRefs.map((ref) => (
+                <div className="evidence-card" key={ref}>
+                  {ref}
+                </div>
+              ))}
 
           {assessment?.evidence && (
             <div className="iq-mode-card">

@@ -37,6 +37,21 @@ def _extract_source_names(text: str) -> list[str]:
     matches = re.findall(r"[\w\-]+\.md", text)
     return sorted(set(matches))
 
+def _clean_foundry_text(text: str) -> str:
+    """
+    Normalizes Foundry citation artifacts for frontend display.
+
+    Foundry responses can include citation markers that render cleanly in the
+    portal but appear as unusual characters in plain JSON/PowerShell output.
+    We keep extracted source names separately in `citations`, so the display
+    text can be simplified safely.
+    """
+    cleaned = text
+    cleaned = cleaned.replace("ã", "")
+    cleaned = re.sub(r"【[^】]+†([^】]+)】", r"(\1)", cleaned)
+    cleaned = re.sub(r"\s{3,}", " ", cleaned)
+    cleaned = re.sub(r"\n{3,}", "\n\n", cleaned)
+    return cleaned.strip()
 
 def retrieve_from_foundry_iq(query: str, drill: dict[str, Any]) -> dict[str, Any]:
     """
@@ -104,8 +119,8 @@ def retrieve_from_foundry_iq(query: str, drill: dict[str, Any]) -> dict[str, Any
             input=prompt,
         )
 
-        answer = response.output_text
-        citations = _extract_source_names(answer)
+        answer = _clean_foundry_text(response.output_text)
+        citations = _extract_source_names(response.output_text)
 
         return {
             "configured": True,
