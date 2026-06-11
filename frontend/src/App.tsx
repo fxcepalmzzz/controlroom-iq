@@ -170,7 +170,9 @@ function App() {
     "idle"
   );
   const [completed, setCompleted] = useState<Record<string, number>>({});
-  
+  const [drillWindowStart, setDrillWindowStart] = useState(0);
+  const visibleDrillCount = 4;
+
   useEffect(() => {
     async function loadBackendData() {
       try {
@@ -194,6 +196,21 @@ function App() {
     () => drills.find((drill) => drill.id === activeDrillId) ?? drills[0],
     [activeDrillId]
   );
+
+  const visibleDrills = Array.from({ length: Math.min(visibleDrillCount, drills.length) }, (_, index) => {
+    const drillIndex = (drillWindowStart + index) % drills.length;
+    return drills[drillIndex];
+  });
+
+  function shiftDrillWindow(direction: "up" | "down") {
+    setDrillWindowStart((current) => {
+      if (direction === "up") {
+        return (current - 1 + drills.length) % drills.length;
+      }
+
+      return (current + 1) % drills.length;
+    });
+  }
 
   const score = assessment?.score ?? getScore(activeDrill, selectedDecision);
   const visibleAgentSteps =
@@ -267,8 +284,11 @@ function App() {
 
   function handleNextDrill() {
     const currentIndex = drills.findIndex((drill) => drill.id === activeDrill.id);
-    const next = drills[(currentIndex + 1) % drills.length];
+    const nextIndex = (currentIndex + 1) % drills.length;
+    const next = drills[nextIndex];
+
     setActiveDrillId(next.id);
+    setDrillWindowStart(nextIndex);
     setSelectedDecision(null);
     setAssessment(null);
     setAssessmentStatus("idle");
@@ -312,7 +332,16 @@ function App() {
             <span>Simulation Drills</span>
           </div>
 
-          {drills.map((drill) => (
+          <button
+            className="drill-scroll-button"
+            type="button"
+            onClick={() => shiftDrillWindow("up")}
+            aria-label="Show previous scenarios"
+          >
+            ↑
+          </button>
+
+          {visibleDrills.map((drill) => (
             <button
               key={drill.id}
               className={`drill-button ${
@@ -335,6 +364,14 @@ function App() {
               )}
             </button>
           ))}
+          <button
+            className="drill-scroll-button"
+            type="button"
+            onClick={() => shiftDrillWindow("down")}
+            aria-label="Show next scenarios"
+          >
+            ↓
+          </button>
         </aside>
 
         <section className="panel main-drill">
@@ -384,7 +421,7 @@ function App() {
               </div>
             </div>
           )}
-          
+
           <div
             className={`result-card ${
               selectedDecision ? (isBest ? "good" : isUnsafe ? "danger" : "warn") : ""
