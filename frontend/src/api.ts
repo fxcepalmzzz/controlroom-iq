@@ -36,6 +36,7 @@ export type EvidenceResult = {
     mode: string;
     reason: string;
     query: string;
+    answer?: string | null;
     citations: string[];
     raw_response: unknown;
   };

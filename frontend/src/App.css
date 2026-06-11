@@ -742,3 +742,29 @@ p {
   font-size: 0.72rem;
   font-style: normal;
 }
+.foundry-output-panel {
+  margin-top: 1rem;
+}
+
+.foundry-output-body {
+  margin-top: 0.9rem;
+  padding: 1rem;
+  border: 1px solid rgba(125, 249, 255, 0.18);
+  border-radius: 16px;
+  background: rgba(10, 18, 24, 0.72);
+  color: #d9f6ff;
+  line-height: 1.7;
+  white-space: pre-wrap;
+  max-height: 280px;
+  overflow-y: auto;
+}
+
+.evidence-sources {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.evidence-summary-card p {
+  margin-top: 0.45rem;
+}

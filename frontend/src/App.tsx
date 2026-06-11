@@ -408,32 +408,52 @@ function App() {
               </button>
             )}
           </div>
+
+          {assessment?.evidence?.foundry_iq?.answer && (
+            <section className="panel foundry-output-panel">
+              <div className="panel-title">
+                <FileText size={17} />
+                <span>Grounded Supervisor Brief</span>
+              </div>
+
+              <p className="muted">
+                Full grounded explanation returned by the Microsoft Foundry Evidence Grounding Agent.
+              </p>
+
+              <div className="foundry-output-body">
+                {assessment.evidence.foundry_iq.answer}
+              </div>
+            </section>
+          )}
         </section>
 
         <aside className="panel evidence-panel">
           <div className="panel-title">
             <FileText size={17} />
-            <span>Foundry IQ Evidence</span>
+            <span>Evidence Sources</span>
           </div>
 
           <p className="muted">
             {assessment?.evidence?.mode === "foundry_iq_agent"
-              ? "Microsoft Foundry IQ evidence retrieved by the Evidence Grounding Agent."
-              : "Synthetic policy references retrieved by the Evidence Grounding Agent."}
+              ? "Microsoft Foundry IQ sources used by the Evidence Grounding Agent."
+              : "Synthetic policy references used by the Evidence Grounding Agent."}
           </p>
 
-          {(assessment?.evidence?.grounded_references ?? []).length > 0
-            ? assessment?.evidence?.grounded_references.map((ref) => (
-                <div className="evidence-card" key={`${ref.source}-${ref.excerpt}`}>
-                  <strong>{ref.source}</strong>
-                  <p>{ref.excerpt}</p>
-                </div>
-              ))
-            : activeDrill.policyRefs.map((ref) => (
-                <div className="evidence-card" key={ref}>
-                  {ref}
+          {assessment?.evidence?.foundry_iq?.citations?.length ? (
+            <div className="evidence-sources">
+              {assessment.evidence.foundry_iq.citations.map((source) => (
+                <div className="evidence-card" key={source}>
+                  <strong>{source}</strong>
                 </div>
               ))}
+            </div>
+          ) : (
+            activeDrill.policyRefs.map((ref) => (
+              <div className="evidence-card" key={ref}>
+                {ref}
+              </div>
+            ))
+          )}
 
           {assessment?.evidence && (
             <div className="iq-mode-card">
