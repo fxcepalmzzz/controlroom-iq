@@ -1,7 +1,7 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from agents.assessment_agent import assess_decision
+from agents.orchestrator import run_supervision_drill
 from agents.manager_insights_agent import build_manager_summary
 from agents.scenario_director_agent import get_drills, get_drill_by_id
 
@@ -45,7 +45,7 @@ def assess(payload: dict):
     decision = payload.get("decision")
 
     drill = get_drill_by_id(drill_id)
-    return assess_decision(drill, decision)
+    return run_supervision_drill(drill, decision)
 
 
 @app.get("/api/manager-summary")
