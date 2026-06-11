@@ -39,42 +39,34 @@ ControlRoom IQ then scores the decision and explains the hidden risk using synth
 
 ControlRoom IQ uses a synthetic multi-agent architecture:
 
-1. **Scenario Director Agent**  
-   Creates realistic workplace AI supervision drills.
-
-2. **Simulated AI Worker Agent**  
-   Produces the AI recommendation the learner must supervise.
-
-3. **Evidence Grounding Agent**  
-   Retrieves synthetic policy and runbook references. In a full Microsoft Foundry version, this maps to Foundry IQ grounded retrieval.
-
-4. **Risk Critic Agent**  
-   Checks for weak evidence, stale retrieval, bias, privacy leakage, and unsafe automation.
-
-5. **Assessment Agent**  
-   Scores the learner decision against a safe-supervision rubric.
-
-6. **Manager Insights Agent**  
-   Updates team readiness, over-trust risk, and recommended next drills.
+1. **Scenario Director Agent** creates realistic workplace AI supervision drills.
+2. **Simulated AI Worker Agent** produces the AI recommendation the learner must supervise.
+3. **Evidence Grounding Agent** retrieves synthetic policy and runbook references. In a full Microsoft Foundry version, this maps to Foundry IQ grounded retrieval.
+4. **Risk Critic Agent** checks for weak evidence, stale retrieval, bias, privacy leakage, and unsafe automation.
+5. **Assessment Agent** scores the learner decision against a safe-supervision rubric.
+6. **Manager Insights Agent** updates team readiness, over-trust risk, and recommended next drills.
 
 ## Microsoft IQ integration plan
 
 ControlRoom IQ is designed around **Foundry IQ** as the main Microsoft IQ layer.
 
 Current prototype:
-- uses synthetic policy references and local markdown knowledge files
-- exposes a FastAPI backend for drill and assessment logic
-- demonstrates the intended grounded evidence workflow
+
+- Uses synthetic policy references and local markdown knowledge files
+- Exposes a FastAPI backend for drill and assessment logic
+- Demonstrates the intended grounded evidence workflow
 
 Planned Microsoft Foundry version:
-- upload synthetic policy docs into Foundry IQ / knowledge sources
-- retrieve grounded evidence for each drill
-- generate cited recommendations and assessment explanations
-- use Microsoft Foundry or Microsoft Agent Framework for orchestration
+
+- Upload synthetic policy docs into Foundry IQ / knowledge sources
+- Retrieve grounded evidence for each drill
+- Generate cited recommendations and assessment explanations
+- Use Microsoft Foundry or Microsoft Agent Framework for orchestration
 
 ## Tech stack
 
 Frontend:
+
 - React
 - TypeScript
 - Vite
@@ -82,6 +74,7 @@ Frontend:
 - lucide-react
 
 Backend:
+
 - Python
 - FastAPI
 - Synthetic JSON datasets
