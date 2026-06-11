@@ -122,12 +122,52 @@ function buildLearningGoal(drill: BackendDrill) {
     return "Recognise when an AI recommendation affects employment outcomes and must be escalated.";
   }
 
-  if (drill.id.startsWith("CS")) {
-    return "Challenge AI recommendations when the source may be outdated or incomplete.";
+  if (drill.id.startsWith("CS") || drill.id.startsWith("CX")) {
+    return "Challenge customer-impacting automation when the source may be outdated, incomplete, or unfair.";
   }
 
   if (drill.id.startsWith("PROC")) {
-    return "Pause automation when a tool tries to skip required approval evidence.";
+    return "Pause automation when a tool tries to skip required vendor approval evidence.";
+  }
+
+  if (drill.id.startsWith("IT")) {
+    return "Ask for contextual evidence before changing access or identity controls.";
+  }
+
+  if (drill.id.startsWith("PRIV") || drill.id.startsWith("DATA")) {
+    return "Stop AI recommendations that misuse personal, sensitive, expired, or unnecessary data.";
+  }
+
+  if (drill.id.startsWith("FIN")) {
+    return "Pause financial automation when fraud-control or payment evidence is missing.";
+  }
+
+  if (drill.id.startsWith("SEC")) {
+    return "Challenge security automation when new evidence changes the risk profile.";
+  }
+
+  if (drill.id.startsWith("LEGAL")) {
+    return "Escalate legal-risk recommendations instead of relying on AI similarity matching.";
+  }
+
+  if (drill.id.startsWith("COMP")) {
+    return "Ask for validation evidence before closing compliance or audit findings.";
+  }
+
+  if (drill.id.startsWith("OPS")) {
+    return "Reject AI recommendations that trade safety for operational efficiency.";
+  }
+
+  if (drill.id.startsWith("MKT")) {
+    return "Reject or escalate targeting decisions that rely on sensitive inferred attributes.";
+  }
+
+  if (drill.id.startsWith("ENG")) {
+    return "Pause production changes when critical release evidence is missing.";
+  }
+
+  if (drill.id.startsWith("TRAIN")) {
+    return "Ask for assessment evidence before marking a learner as certification-ready.";
   }
 
   return "Decide whether the AI recommendation is safe enough to approve.";
@@ -138,12 +178,52 @@ function buildManagerImpact(drill: BackendDrill) {
     return "Flags HR reviewers who over-trust AI ranking systems during high-impact decisions.";
   }
 
-  if (drill.id.startsWith("CS")) {
-    return "Identifies support leads who need more practice challenging stale retrieval.";
+  if (drill.id.startsWith("CS") || drill.id.startsWith("CX")) {
+    return "Identifies support leads who need more practice challenging stale or unfair customer automation.";
   }
 
   if (drill.id.startsWith("PROC")) {
     return "Shows procurement teams whether they can stop unsafe automation under pressure.";
+  }
+
+  if (drill.id.startsWith("IT")) {
+    return "Highlights whether IT reviewers check business context before approving access changes.";
+  }
+
+  if (drill.id.startsWith("PRIV") || drill.id.startsWith("DATA")) {
+    return "Flags teams that need stronger data minimisation and privacy supervision habits.";
+  }
+
+  if (drill.id.startsWith("FIN")) {
+    return "Shows whether finance reviewers catch missing payment-control evidence.";
+  }
+
+  if (drill.id.startsWith("SEC")) {
+    return "Highlights SOC reviewers who suppress alerts without checking changed evidence.";
+  }
+
+  if (drill.id.startsWith("LEGAL")) {
+    return "Flags legal-risk scenarios where reviewers over-trust AI similarity matching.";
+  }
+
+  if (drill.id.startsWith("COMP")) {
+    return "Shows whether compliance reviewers require validation evidence before closure.";
+  }
+
+  if (drill.id.startsWith("OPS")) {
+    return "Flags operations teams that prioritise productivity over safety constraints.";
+  }
+
+  if (drill.id.startsWith("MKT")) {
+    return "Identifies marketing workflows that need stronger consent and fairness checks.";
+  }
+
+  if (drill.id.startsWith("ENG")) {
+    return "Shows whether engineering reviewers pause risky production changes.";
+  }
+
+  if (drill.id.startsWith("TRAIN")) {
+    return "Shows whether learning managers separate completion from real readiness.";
   }
 
   return "Updates team readiness based on the learner's supervision decision.";

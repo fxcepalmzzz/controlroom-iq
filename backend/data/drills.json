@@ -8,7 +8,7 @@
     "recommendation": "Remove Employee L-1004 from the promotion shortlist due to low predicted leadership fit.",
     "hidden_risk": "The recommendation affects employment outcomes, is weakly grounded, and may encode bias. The AI has not cited enough role-relevant evidence or provided an appeal path.",
     "best_decision": "escalate",
-    "acceptable_decisions": ["escalate", "reject", "evidence"],
+    "acceptable_decisions": ["evidence", "pause", "reject"],
     "unsafe_decisions": ["approve"],
     "policy_refs": [
       "HR-AI-Policy §2.1: High-impact employment decisions require human review.",
@@ -22,16 +22,16 @@
     "department": "Customer Support",
     "severity": "High",
     "ai_agent": "Support Resolution Agent",
-    "recommendation": "Automatically deny the customer refund because their case appears outside the return window.",
-    "hidden_risk": "The retrieved policy is stale. The policy changed last quarter for warranty exceptions, so the AI may deny a valid claim.",
+    "recommendation": "Automatically deny the customer's refund request because the purchase is outside the standard 14-day window.",
+    "hidden_risk": "The AI is using a stale refund policy and missed an exception for defective products reported within 30 days.",
     "best_decision": "evidence",
-    "acceptable_decisions": ["evidence", "pause", "escalate"],
+    "acceptable_decisions": ["pause", "escalate", "reject"],
     "unsafe_decisions": ["approve"],
     "policy_refs": [
-      "Support Runbook §3.2: Refund denials require current policy citation.",
-      "Grounding Standard §1.4: Stale retrieval must be challenged before action."
+      "Customer Impact Policy §1.4: Customer-impacting denials require current policy evidence.",
+      "Refund Runbook §3.2: Defective product exceptions may override the standard refund window."
     ],
-    "supervisor_lesson": "When an AI cites a policy, the supervisor must check whether the policy is current and relevant before approving customer-impacting automation."
+    "supervisor_lesson": "A safe supervisor should challenge customer-impacting automation when policy evidence may be stale or incomplete."
   },
   {
     "id": "PROC-031",
@@ -40,14 +40,218 @@
     "severity": "High",
     "ai_agent": "Vendor Screening Agent",
     "recommendation": "Approve Vendor V-204 immediately because the quote is 18% cheaper than alternatives.",
-    "hidden_risk": "The agent ignored missing compliance documentation and over-optimised for cost.",
+    "hidden_risk": "The vendor has no completed compliance evidence, and the AI is optimising for cost while bypassing required due-diligence checks.",
     "best_decision": "pause",
-    "acceptable_decisions": ["pause", "evidence", "escalate"],
+    "acceptable_decisions": ["evidence", "escalate", "reject"],
     "unsafe_decisions": ["approve"],
     "policy_refs": [
       "Procurement Policy §5.1: Vendors cannot be approved without compliance documents.",
       "AI Tool Use Policy §2.7: Cost-saving recommendations must not bypass governance controls."
     ],
-    "supervisor_lesson": "Cost savings are not enough to approve a vendor. The AI must satisfy governance and compliance requirements before action is allowed."
+    "supervisor_lesson": "A safe supervisor should pause automation when an AI tool is about to execute a vendor decision before required compliance checks are complete."
+  },
+  {
+    "id": "IT-044",
+    "title": "Dormant Account Removal",
+    "department": "IT",
+    "severity": "High",
+    "ai_agent": "Access Hygiene Agent",
+    "recommendation": "Remove access for User U-338 because the account has been inactive for 21 days.",
+    "hidden_risk": "The user is on approved medical leave and owns a scheduled incident response rotation next week. Removing access could disrupt operational readiness.",
+    "best_decision": "evidence",
+    "acceptable_decisions": ["escalate", "pause"],
+    "unsafe_decisions": ["approve", "reject"],
+    "policy_refs": [
+      "Access Control Runbook §4.2: Access removal requires checking leave status and business ownership.",
+      "IT Operations Policy §6.1: Critical operational roles require manager confirmation before access changes."
+    ],
+    "supervisor_lesson": "A safe supervisor should ask for contextual evidence before approving access removal, especially when operational ownership may be affected."
+  },
+  {
+    "id": "PRIV-058",
+    "title": "Customer Data Summary",
+    "department": "Privacy",
+    "severity": "Critical",
+    "ai_agent": "Customer Insights Agent",
+    "recommendation": "Send the full customer complaint transcript to the product analytics workspace to improve churn prediction.",
+    "hidden_risk": "The transcript contains sensitive personal data and identifiable complaint details that are unnecessary for the analytics task.",
+    "best_decision": "reject",
+    "acceptable_decisions": ["pause", "escalate"],
+    "unsafe_decisions": ["approve", "evidence"],
+    "policy_refs": [
+      "Privacy Policy §1.1: Personal data must be minimised before analytics use.",
+      "Data Handling Standard §2.3: Sensitive complaint details require redaction or aggregation."
+    ],
+    "supervisor_lesson": "A safe supervisor should reject AI recommendations that move unnecessary sensitive data into analytics workflows."
+  },
+  {
+    "id": "FIN-063",
+    "title": "Invoice Payment Acceleration",
+    "department": "Finance",
+    "severity": "High",
+    "ai_agent": "Invoice Prioritisation Agent",
+    "recommendation": "Fast-track payment for Supplier S-902 because delayed payment may affect quarterly service continuity.",
+    "hidden_risk": "The invoice is missing purchase-order matching and the supplier bank details changed yesterday.",
+    "best_decision": "pause",
+    "acceptable_decisions": ["evidence", "escalate", "reject"],
+    "unsafe_decisions": ["approve"],
+    "policy_refs": [
+      "Finance Controls §3.5: Payment acceleration requires purchase-order match and bank detail verification.",
+      "Fraud Prevention Runbook §2.2: Recent bank detail changes require manual verification."
+    ],
+    "supervisor_lesson": "A safe supervisor should pause financial automation when fraud-control evidence is missing or recently changed."
+  },
+  {
+    "id": "SEC-071",
+    "title": "Security Alert Suppression",
+    "department": "Security",
+    "severity": "Critical",
+    "ai_agent": "SOC Triage Agent",
+    "recommendation": "Suppress repeated alerts from Host H-219 for 24 hours because previous alerts were false positives.",
+    "hidden_risk": "The latest alert includes a new suspicious PowerShell pattern that was not present in earlier false positives.",
+    "best_decision": "evidence",
+    "acceptable_decisions": ["pause", "escalate"],
+    "unsafe_decisions": ["approve", "reject"],
+    "policy_refs": [
+      "SOC Runbook §7.4: Alert suppression requires checking whether the current signal matches prior false-positive evidence.",
+      "Security Operations Policy §1.8: New suspicious execution patterns must be reviewed before suppression."
+    ],
+    "supervisor_lesson": "A safe supervisor should challenge alert suppression when new evidence changes the risk profile."
+  },
+  {
+    "id": "LEGAL-082",
+    "title": "Contract Clause Auto-Acceptance",
+    "department": "Legal",
+    "severity": "High",
+    "ai_agent": "Contract Review Agent",
+    "recommendation": "Accept the vendor's updated liability clause because it is similar to previously approved language.",
+    "hidden_risk": "The clause removes the vendor's liability cap for data loss but adds broad exclusions that shift risk back to the company.",
+    "best_decision": "escalate",
+    "acceptable_decisions": ["evidence", "pause", "reject"],
+    "unsafe_decisions": ["approve"],
+    "policy_refs": [
+      "Legal Review Policy §4.6: Liability and data-loss clauses require legal review.",
+      "Vendor Risk Standard §3.4: Similarity to prior wording is not sufficient approval evidence."
+    ],
+    "supervisor_lesson": "A safe supervisor should escalate legal-risk decisions instead of relying on AI similarity matching."
+  },
+  {
+    "id": "COMP-096",
+    "title": "Audit Finding Closure",
+    "department": "Compliance",
+    "severity": "High",
+    "ai_agent": "Compliance Evidence Agent",
+    "recommendation": "Mark audit finding A-117 as closed because a remediation screenshot was uploaded.",
+    "hidden_risk": "The screenshot shows the control setting, but there is no evidence that the control was tested after remediation.",
+    "best_decision": "evidence",
+    "acceptable_decisions": ["pause", "escalate"],
+    "unsafe_decisions": ["approve", "reject"],
+    "policy_refs": [
+      "Audit Evidence Standard §2.2: Closure requires both remediation evidence and validation evidence.",
+      "Compliance Policy §5.5: Screenshots alone are insufficient for high-risk control closure."
+    ],
+    "supervisor_lesson": "A safe supervisor should ask for validation evidence before closing a compliance finding."
+  },
+  {
+    "id": "OPS-104",
+    "title": "Warehouse Safety Override",
+    "department": "Operations",
+    "severity": "Critical",
+    "ai_agent": "Shift Optimisation Agent",
+    "recommendation": "Override the fatigue warning for Worker W-044 because staffing levels are below target.",
+    "hidden_risk": "The AI is prioritising coverage over safety and may violate fatigue-management rules.",
+    "best_decision": "reject",
+    "acceptable_decisions": ["pause", "escalate"],
+    "unsafe_decisions": ["approve", "evidence"],
+    "policy_refs": [
+      "Workplace Safety Policy §1.3: Fatigue warnings must not be overridden for productivity reasons.",
+      "Operations AI Policy §2.1: AI scheduling recommendations must preserve safety constraints."
+    ],
+    "supervisor_lesson": "A safe supervisor should reject recommendations that trade worker safety for operational efficiency."
+  },
+  {
+    "id": "MKT-118",
+    "title": "Personalised Campaign Expansion",
+    "department": "Marketing",
+    "severity": "Medium",
+    "ai_agent": "Campaign Optimisation Agent",
+    "recommendation": "Expand the campaign audience using predicted income level and health-interest segments.",
+    "hidden_risk": "The proposed targeting uses sensitive inferred attributes and may violate consent and fairness standards.",
+    "best_decision": "reject",
+    "acceptable_decisions": ["pause", "escalate", "evidence"],
+    "unsafe_decisions": ["approve"],
+    "policy_refs": [
+      "Marketing Data Policy §3.1: Sensitive inferred attributes cannot be used for audience expansion without explicit approval.",
+      "Privacy Policy §1.7: Consent and data minimisation apply to personalisation."
+    ],
+    "supervisor_lesson": "A safe supervisor should reject targeting that relies on sensitive inferred attributes without explicit approval."
+  },
+  {
+    "id": "ENG-129",
+    "title": "Production Patch Recommendation",
+    "department": "Engineering",
+    "severity": "High",
+    "ai_agent": "Release Reliability Agent",
+    "recommendation": "Deploy the patch directly to production because the unit tests passed and the issue affects checkout latency.",
+    "hidden_risk": "The AI ignored failed integration tests and the patch touches payment retry logic.",
+    "best_decision": "pause",
+    "acceptable_decisions": ["evidence", "escalate", "reject"],
+    "unsafe_decisions": ["approve"],
+    "policy_refs": [
+      "Release Policy §6.2: Payment-path changes require integration test pass and rollback plan.",
+      "Engineering Reliability Standard §2.9: Unit tests alone are insufficient for high-impact production changes."
+    ],
+    "supervisor_lesson": "A safe supervisor should pause production deployment when critical test evidence is missing."
+  },
+  {
+    "id": "DATA-137",
+    "title": "Training Dataset Inclusion",
+    "department": "Data",
+    "severity": "Critical",
+    "ai_agent": "Dataset Curation Agent",
+    "recommendation": "Include archived support tickets in the model training dataset to improve complaint classification accuracy.",
+    "hidden_risk": "The archive contains identifiable personal data and tickets outside the approved retention period.",
+    "best_decision": "reject",
+    "acceptable_decisions": ["pause", "escalate"],
+    "unsafe_decisions": ["approve", "evidence"],
+    "policy_refs": [
+      "Data Retention Policy §4.4: Expired support records must not be reused for model training.",
+      "AI Data Governance Policy §1.9: Training data must be minimised, approved, and de-identified."
+    ],
+    "supervisor_lesson": "A safe supervisor should reject training-data recommendations that reuse expired or identifiable records."
+  },
+  {
+    "id": "CX-145",
+    "title": "VIP Complaint Prioritisation",
+    "department": "Customer Experience",
+    "severity": "Medium",
+    "ai_agent": "Service Prioritisation Agent",
+    "recommendation": "Prioritise VIP customers first and delay standard-tier complaints until tomorrow.",
+    "hidden_risk": "The delayed queue includes safety-related complaints that should be prioritised regardless of customer tier.",
+    "best_decision": "evidence",
+    "acceptable_decisions": ["pause", "escalate", "reject"],
+    "unsafe_decisions": ["approve"],
+    "policy_refs": [
+      "Customer Impact Policy §2.8: Safety-related complaints override commercial priority tiers.",
+      "Service Fairness Standard §1.2: Automated prioritisation must not hide urgent harms."
+    ],
+    "supervisor_lesson": "A safe supervisor should ask for evidence about complaint severity before approving automated prioritisation."
+  },
+  {
+    "id": "TRAIN-152",
+    "title": "Certification Readiness Shortcut",
+    "department": "Learning",
+    "severity": "Medium",
+    "ai_agent": "Learning Readiness Agent",
+    "recommendation": "Mark Learner L-209 as certification-ready because they completed all modules.",
+    "hidden_risk": "The learner completed modules but failed the final two practice checks and has not reviewed weak skill areas.",
+    "best_decision": "evidence",
+    "acceptable_decisions": ["pause", "escalate"],
+    "unsafe_decisions": ["approve"],
+    "policy_refs": [
+      "Learning Readiness Policy §3.3: Completion alone is insufficient; readiness requires assessment performance evidence.",
+      "Certification Support Guide §2.5: Weak skill areas must be remediated before readiness sign-off."
+    ],
+    "supervisor_lesson": "A safe supervisor should ask for assessment evidence instead of accepting completion status as readiness."
   }
 ]
