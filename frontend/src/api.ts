@@ -48,6 +48,23 @@ export type RiskCritique = {
   risk_flags: string[];
   recommended_supervisor_action: Decision;
 };
+export type OrchestrationStep = {
+  step: number;
+  agent: string;
+  purpose: string;
+  mode?: string;
+  risk_level?: string;
+  verdict?: string;
+};
+
+export type OrchestrationTrace = {
+  agent: string;
+  pattern: string;
+  steps: OrchestrationStep[];
+  human_in_the_loop: boolean;
+  synthetic_data_only: boolean;
+  microsoft_iq_layer: string;
+};
 
 export type AssessmentResult = {
   drill_id: string;
@@ -59,6 +76,7 @@ export type AssessmentResult = {
   policy_refs: string[];
   evidence?: EvidenceResult;
   risk_critique?: RiskCritique;
+  orchestration?: OrchestrationTrace;
   agent: string;
 };
 

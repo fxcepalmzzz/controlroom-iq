@@ -107,7 +107,7 @@ const decisions: { id: Decision; label: string; icon: React.ReactNode }[] = [
   { id: "pause", label: "Pause automation", icon: <PauseCircle size={17} /> },
 ];
 
-const agentSteps = [
+const fallbackAgentSteps = [
   "Scenario Director creates a synthetic workplace drill with a hidden AI failure mode.",
   "Simulated AI Worker generates a recommendation that may be safe, weakly grounded, or unsafe.",
   "Evidence Grounding Agent retrieves policy references from the Foundry IQ knowledge layer.",
@@ -196,6 +196,18 @@ function App() {
   );
 
   const score = assessment?.score ?? getScore(activeDrill, selectedDecision);
+  const visibleAgentSteps =
+  assessment?.orchestration?.steps.map((step) => ({
+    label: step.agent,
+    detail: step.purpose,
+    meta: step.mode ?? step.risk_level ?? step.verdict ?? "",
+  })) ??
+  fallbackAgentSteps.map((step) => ({
+    label: "Demo trace",
+    detail: step,
+    meta: "static fallback",
+  }));
+  
   const isBest = selectedDecision === activeDrill.bestDecision;
   const isUnsafe = selectedDecision
     ? activeDrill.unsafeDecisions.includes(selectedDecision)
@@ -430,7 +442,7 @@ function App() {
               ))}
             </div>
           )}
-          
+
           <div className="risk-card">
             <div className="panel-title">
               <Gauge size={17} />
@@ -452,11 +464,22 @@ function App() {
           <span>Visible Multi-Agent Reasoning Trace</span>
         </div>
 
+        {assessment?.orchestration && (
+          <p className="orchestration-mode">
+            Live backend orchestration · {assessment.orchestration.pattern} ·{" "}
+            {assessment.orchestration.microsoft_iq_layer}
+          </p>
+        )}
+
         <div className="trace-grid">
-          {agentSteps.map((step, index) => (
-            <div className="trace-step" key={step}>
+          {visibleAgentSteps.map((step, index) => (
+            <div className="trace-step" key={`${step.label}-${index}`}>
               <span>{index + 1}</span>
-              <p>{step}</p>
+              <div>
+                <strong>{step.label}</strong>
+                <p>{step.detail}</p>
+                {step.meta && <em>{step.meta}</em>}
+              </div>
             </div>
           ))}
         </div>
