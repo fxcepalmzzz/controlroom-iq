@@ -603,3 +603,51 @@ p {
     grid-template-columns: 1fr;
   }
 }
+
+.mini-score {
+  display: inline-flex;
+  margin-top: 10px;
+  color: var(--green);
+  font-size: 0.68rem;
+  font-style: normal;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.result-card {
+  margin-top: 18px;
+  border: 1px solid rgba(125, 196, 205, 0.18);
+  background: rgba(4, 10, 12, 0.4);
+}
+
+.result-card.danger {
+  border: 1px solid rgba(239, 111, 122, 0.72);
+  background: rgba(239, 111, 122, 0.12);
+}
+
+.result-card p {
+  color: var(--muted);
+  line-height: 1.75;
+}
+
+.next-drill-button {
+  margin-top: 10px;
+  border: 1px solid rgba(154, 232, 255, 0.32);
+  border-radius: 11px;
+  background: rgba(154, 232, 255, 0.08);
+  color: var(--cyan);
+  padding: 10px 12px;
+  cursor: pointer;
+  font-size: 0.72rem;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  transition: 160ms ease;
+}
+
+.next-drill-button:hover {
+  transform: translateY(-2px);
+  border-color: var(--coral);
+  color: var(--coral);
+}

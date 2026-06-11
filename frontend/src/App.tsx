@@ -10,6 +10,7 @@ import {
   Siren,
   UserCheck,
   XCircle,
+  CircleSlash,
 } from "lucide-react";
 import "./App.css";
 
@@ -24,8 +25,12 @@ type Drill = {
   recommendation: string;
   hiddenRisk: string;
   bestDecision: Decision;
+  acceptableDecisions: Decision[];
+  unsafeDecisions: Decision[];
   policyRefs: string[];
   learningGoal: string;
+  supervisorLesson: string;
+  managerImpact: string;
 };
 
 const drills: Drill[] = [
@@ -38,14 +43,20 @@ const drills: Drill[] = [
     recommendation:
       "Remove Employee L-1004 from the promotion shortlist due to low predicted leadership fit.",
     hiddenRisk:
-      "The recommendation is high-impact, weakly grounded, and may encode bias. The AI has not cited enough role-relevant evidence or human review history.",
+      "The recommendation affects employment outcomes, is weakly grounded, and may encode bias. The AI has not cited enough role-relevant evidence or provided an appeal path.",
     bestDecision: "escalate",
+    acceptableDecisions: ["escalate", "reject", "evidence"],
+    unsafeDecisions: ["approve"],
     policyRefs: [
       "HR-AI-Policy §2.1: High-impact employment decisions require human review.",
       "Responsible AI Guide §4.3: Automated recommendations must include evidence and appeal path.",
     ],
     learningGoal:
       "Recognise when an AI recommendation affects employment outcomes and must be escalated.",
+    supervisorLesson:
+      "A safe supervisor should not let an AI system make or quietly influence high-impact HR decisions without policy-backed evidence, human review, and an appeal route.",
+    managerImpact:
+      "Flags HR reviewers who over-trust AI ranking systems during high-impact decisions.",
   },
   {
     id: "CS-022",
@@ -56,14 +67,20 @@ const drills: Drill[] = [
     recommendation:
       "Automatically deny the customer refund because their case appears outside the return window.",
     hiddenRisk:
-      "The retrieved policy is stale. The policy changed last quarter for warranty exceptions.",
+      "The retrieved policy is stale. The policy changed last quarter for warranty exceptions, so the AI may deny a valid claim.",
     bestDecision: "evidence",
+    acceptableDecisions: ["evidence", "pause", "escalate"],
+    unsafeDecisions: ["approve"],
     policyRefs: [
       "Support Runbook §3.2: Refund denials require current policy citation.",
       "Grounding Standard §1.4: Stale retrieval must be challenged before action.",
     ],
     learningGoal:
       "Challenge AI recommendations when the source may be outdated or incomplete.",
+    supervisorLesson:
+      "When an AI cites a policy, the supervisor must check whether the policy is current and relevant before approving customer-impacting automation.",
+    managerImpact:
+      "Identifies support leads who need more practice challenging stale retrieval.",
   },
   {
     id: "PROC-031",
@@ -76,50 +93,132 @@ const drills: Drill[] = [
     hiddenRisk:
       "The agent ignored missing compliance documentation and over-optimised for cost.",
     bestDecision: "pause",
+    acceptableDecisions: ["pause", "evidence", "escalate"],
+    unsafeDecisions: ["approve"],
     policyRefs: [
       "Procurement Policy §5.1: Vendors cannot be approved without compliance documents.",
       "AI Tool Use Policy §2.7: Cost-saving recommendations must not bypass governance controls.",
     ],
     learningGoal:
       "Pause automation when a tool tries to skip required approval evidence.",
+    supervisorLesson:
+      "Cost savings are not enough to approve a vendor. The AI must satisfy governance and compliance requirements before action is allowed.",
+    managerImpact:
+      "Shows procurement teams whether they can stop unsafe automation under pressure.",
   },
 ];
 
 const decisions: { id: Decision; label: string; icon: React.ReactNode }[] = [
-  { id: "approve", label: "Approve", icon: <CheckCircle2 size={18} /> },
-  { id: "reject", label: "Reject", icon: <XCircle size={18} /> },
-  { id: "evidence", label: "Ask for evidence", icon: <FileText size={18} /> },
-  { id: "escalate", label: "Escalate", icon: <Siren size={18} /> },
-  { id: "pause", label: "Pause automation", icon: <PauseCircle size={18} /> },
+  { id: "approve", label: "Approve", icon: <CheckCircle2 size={17} /> },
+  { id: "reject", label: "Reject", icon: <XCircle size={17} /> },
+  { id: "evidence", label: "Ask for evidence", icon: <FileText size={17} /> },
+  { id: "escalate", label: "Escalate", icon: <Siren size={17} /> },
+  { id: "pause", label: "Pause automation", icon: <PauseCircle size={17} /> },
 ];
 
 const agentSteps = [
-  "Scenario Director generated a realistic workplace AI supervision drill.",
-  "Simulated AI Worker produced a recommendation with realistic failure risk.",
-  "Evidence Grounding Agent retrieved synthetic policy references through Foundry IQ.",
-  "Risk Critic Agent checked for weak evidence, stale retrieval, bias, privacy, and unsafe automation.",
-  "Assessment Agent compared the learner decision against the safe-supervision rubric.",
-  "Manager Insights Agent updated team readiness and certification risk.",
+  "Scenario Director creates a synthetic workplace drill with a hidden AI failure mode.",
+  "Simulated AI Worker generates a recommendation that may be safe, weakly grounded, or unsafe.",
+  "Evidence Grounding Agent retrieves policy references from the Foundry IQ knowledge layer.",
+  "Risk Critic checks for missing evidence, stale sources, bias, privacy leakage, and automation risk.",
+  "Assessment Agent scores the learner decision against the safe-supervision rubric.",
+  "Manager Insights Agent updates team readiness and recommends the next drill.",
 ];
+
+function getDecisionLabel(decision: Decision) {
+  return decisions.find((item) => item.id === decision)?.label ?? decision;
+}
+
+function getScore(drill: Drill, decision: Decision | null) {
+  if (!decision) return 0;
+  if (decision === drill.bestDecision) return 94;
+  if (drill.acceptableDecisions.includes(decision)) return 76;
+  if (drill.unsafeDecisions.includes(decision)) return 28;
+  return 52;
+}
+
+function getResultTitle(drill: Drill, decision: Decision | null) {
+  if (!decision) return "Awaiting supervisor action";
+  if (decision === drill.bestDecision) return "Excellent supervision decision";
+  if (drill.acceptableDecisions.includes(decision)) return "Defensible but incomplete";
+  if (drill.unsafeDecisions.includes(decision)) return "Unsafe approval path";
+  return "Risk partially missed";
+}
+
+function getResultText(drill: Drill, decision: Decision | null) {
+  if (!decision) {
+    return "Choose how the human supervisor should respond to the AI recommendation.";
+  }
+
+  if (decision === drill.bestDecision) {
+    return drill.supervisorLesson;
+  }
+
+  if (drill.acceptableDecisions.includes(decision)) {
+    return `This action reduces risk, but the strongest response is "${getDecisionLabel(
+      drill.bestDecision
+    )}" because the scenario requires a more direct safety control.`;
+  }
+
+  if (drill.unsafeDecisions.includes(decision)) {
+    return `Approving here would allow the AI recommendation to affect a real workflow despite this hidden risk: ${drill.hiddenRisk}`;
+  }
+
+  return `This choice does not fully address the hidden risk: ${drill.hiddenRisk}`;
+}
 
 function App() {
   const [activeDrillId, setActiveDrillId] = useState(drills[0].id);
   const [selectedDecision, setSelectedDecision] = useState<Decision | null>(null);
+  const [completed, setCompleted] = useState<Record<string, number>>({});
 
   const activeDrill = useMemo(
     () => drills.find((drill) => drill.id === activeDrillId) ?? drills[0],
     [activeDrillId]
   );
 
-  const isCorrect = selectedDecision === activeDrill.bestDecision;
+  const score = getScore(activeDrill, selectedDecision);
+  const isBest = selectedDecision === activeDrill.bestDecision;
+  const isUnsafe = selectedDecision
+    ? activeDrill.unsafeDecisions.includes(selectedDecision)
+    : false;
 
-  const score = selectedDecision
-    ? isCorrect
-      ? 92
-      : selectedDecision === "evidence" || selectedDecision === "pause"
-      ? 68
-      : 41
-    : 0;
+  const averageScore = useMemo(() => {
+    const scores = Object.values(completed);
+    if (selectedDecision) {
+      const simulated = { ...completed, [activeDrill.id]: score };
+      const values = Object.values(simulated);
+      return Math.round(values.reduce((sum, item) => sum + item, 0) / values.length);
+    }
+    if (!scores.length) return 78;
+    return Math.round(scores.reduce((sum, item) => sum + item, 0) / scores.length);
+  }, [activeDrill.id, completed, score, selectedDecision]);
+
+  const completedCount = new Set([
+    ...Object.keys(completed),
+    ...(selectedDecision ? [activeDrill.id] : []),
+  ]).size;
+
+  const overTrustRisk =
+    selectedDecision && isUnsafe
+      ? 2
+      : Object.values(completed).filter((item) => item < 50).length || 1;
+
+  function handleDecision(decision: Decision) {
+    setSelectedDecision(decision);
+    const nextScore = getScore(activeDrill, decision);
+    setCompleted((previous) => ({
+      ...previous,
+      [activeDrill.id]: nextScore,
+    }));
+  }
+
+  function handleNextDrill() {
+    const currentIndex = drills.findIndex((drill) => drill.id === activeDrill.id);
+    const next = drills[(currentIndex + 1) % drills.length];
+    setActiveDrillId(next.id);
+    setSelectedDecision(null);
+  }
 
   return (
     <main className="app-shell">
@@ -140,7 +239,7 @@ function App() {
         </div>
 
         <div className="hero-card">
-          <ShieldCheck size={34} />
+          <ShieldCheck size={30} />
           <h2>AI Supervisor Readiness</h2>
           <p>
             Learners must decide when to approve, reject, question, escalate, or
@@ -152,7 +251,7 @@ function App() {
       <section className="grid-layout">
         <aside className="panel drill-list">
           <div className="panel-title">
-            <Brain size={18} />
+            <Brain size={17} />
             <span>Simulation Drills</span>
           </div>
 
@@ -172,6 +271,9 @@ function App() {
               <small>
                 {drill.department} · {drill.severity}
               </small>
+              {completed[drill.id] && (
+                <em className="mini-score">Score {completed[drill.id]}</em>
+              )}
             </button>
           ))}
         </aside>
@@ -202,7 +304,7 @@ function App() {
                 className={`decision-button ${
                   selectedDecision === decision.id ? "selected" : ""
                 }`}
-                onClick={() => setSelectedDecision(decision.id)}
+                onClick={() => handleDecision(decision.id)}
               >
                 {decision.icon}
                 {decision.label}
@@ -210,23 +312,37 @@ function App() {
             ))}
           </div>
 
-          {selectedDecision && (
-            <div className={`result-card ${isCorrect ? "good" : "warn"}`}>
-              <div className="result-heading">
-                {isCorrect ? <CheckCircle2 /> : <AlertTriangle />}
-                <h3>{isCorrect ? "Strong supervision decision" : "Risk missed"}</h3>
-              </div>
-              <p>
-                Best decision: <strong>{activeDrill.bestDecision}</strong>
-              </p>
-              <p>{activeDrill.hiddenRisk}</p>
+          <div
+            className={`result-card ${
+              selectedDecision ? (isBest ? "good" : isUnsafe ? "danger" : "warn") : ""
+            }`}
+          >
+            <div className="result-heading">
+              {selectedDecision ? (
+                isBest ? (
+                  <CheckCircle2 />
+                ) : isUnsafe ? (
+                  <CircleSlash />
+                ) : (
+                  <AlertTriangle />
+                )
+              ) : (
+                <Gauge />
+              )}
+              <h3>{getResultTitle(activeDrill, selectedDecision)}</h3>
             </div>
-          )}
+            <p>{getResultText(activeDrill, selectedDecision)}</p>
+            {selectedDecision && (
+              <button className="next-drill-button" onClick={handleNextDrill}>
+                Load next drill
+              </button>
+            )}
+          </div>
         </section>
 
         <aside className="panel evidence-panel">
           <div className="panel-title">
-            <FileText size={18} />
+            <FileText size={17} />
             <span>Foundry IQ Evidence</span>
           </div>
 
@@ -242,15 +358,13 @@ function App() {
 
           <div className="risk-card">
             <div className="panel-title">
-              <Gauge size={18} />
+              <Gauge size={17} />
               <span>Assessment Score</span>
             </div>
             <div className="score">{selectedDecision ? score : "--"}</div>
             <p>
               {selectedDecision
-                ? isCorrect
-                  ? "Ready for advanced supervision drills."
-                  : "Needs more practice on escalation and evidence checks."
+                ? activeDrill.managerImpact
                 : "Choose a supervision action to receive a score."}
             </p>
           </div>
@@ -259,7 +373,7 @@ function App() {
 
       <section className="panel trace-panel">
         <div className="panel-title">
-          <UserCheck size={18} />
+          <UserCheck size={17} />
           <span>Visible Multi-Agent Reasoning Trace</span>
         </div>
 
@@ -278,22 +392,23 @@ function App() {
           <p className="eyebrow">Manager Insights Agent</p>
           <h2>Team readiness summary</h2>
           <p>
-            Synthetic team data shows 2 learners are ready, 2 need escalation
-            practice, and 1 repeatedly approves weakly grounded AI actions.
+            Synthetic team data updates as drills are completed. The manager sees
+            who over-trusts AI, who asks for evidence, and who escalates correctly
+            before agents affect real workflows.
           </p>
         </div>
 
         <div className="manager-stats">
           <div>
-            <strong>78%</strong>
+            <strong>{averageScore}%</strong>
             <span>Team readiness</span>
           </div>
           <div>
-            <strong>3</strong>
-            <span>High-risk drills completed</span>
+            <strong>{completedCount}</strong>
+            <span>Drills completed</span>
           </div>
           <div>
-            <strong>1</strong>
+            <strong>{overTrustRisk}</strong>
             <span>Automation over-trust risk</span>
           </div>
         </div>
