@@ -768,3 +768,36 @@ p {
 .evidence-summary-card p {
   margin-top: 0.45rem;
 }
+/* Themed scrollbars */
+.foundry-output-body {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(125, 249, 255, 0.55) rgba(8, 16, 22, 0.85);
+}
+
+.foundry-output-body::-webkit-scrollbar {
+  width: 10px;
+}
+
+.foundry-output-body::-webkit-scrollbar-track {
+  background: rgba(8, 16, 22, 0.85);
+  border-radius: 999px;
+  border: 1px solid rgba(125, 249, 255, 0.08);
+}
+
+.foundry-output-body::-webkit-scrollbar-thumb {
+  background: linear-gradient(
+    180deg,
+    rgba(125, 249, 255, 0.7),
+    rgba(255, 112, 130, 0.55)
+  );
+  border-radius: 999px;
+  border: 2px solid rgba(8, 16, 22, 0.95);
+}
+
+.foundry-output-body::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(
+    180deg,
+    rgba(125, 249, 255, 0.9),
+    rgba(255, 112, 130, 0.75)
+  );
+}
