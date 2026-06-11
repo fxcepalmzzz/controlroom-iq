@@ -364,6 +364,7 @@ function App() {
                   selectedDecision === decision.id ? "selected" : ""
                 }`}
                 onClick={() => handleDecision(decision.id)}
+                disabled={assessmentStatus === "checking"}
               >
                 {decision.icon}
                 {decision.label}
@@ -371,6 +372,19 @@ function App() {
             ))}
           </div>
 
+          {assessmentStatus === "checking" && (
+            <div className="foundry-loading-card">
+              <div className="loading-dot" />
+              <div>
+                <strong>Consulting Microsoft Foundry IQ...</strong>
+                <p>
+                  Retrieving grounded policy evidence from the synthetic knowledge base and
+                  running the backend multi-agent assessment.
+                </p>
+              </div>
+            </div>
+          )}
+          
           <div
             className={`result-card ${
               selectedDecision ? (isBest ? "good" : isUnsafe ? "danger" : "warn") : ""
