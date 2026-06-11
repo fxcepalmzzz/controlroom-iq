@@ -1,7 +1,16 @@
+from __future__ import annotations
+
+from agents.evidence_grounding_agent import ground_evidence
+from agents.risk_critic_agent import critique_risk
+
+
 def assess_decision(drill: dict, decision: str):
     best_decision = drill["best_decision"]
     acceptable = drill["acceptable_decisions"]
     unsafe = drill["unsafe_decisions"]
+
+    evidence = ground_evidence(drill)
+    risk_critique = critique_risk(drill)
 
     if decision == best_decision:
         score = 94
@@ -34,5 +43,7 @@ def assess_decision(drill: dict, decision: str):
         "verdict": verdict,
         "explanation": explanation,
         "policy_refs": drill["policy_refs"],
+        "evidence": evidence,
+        "risk_critique": risk_critique,
         "agent": "Assessment Agent",
     }
