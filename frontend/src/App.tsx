@@ -13,7 +13,14 @@ import {
   CircleSlash,
 } from "lucide-react";
 import "./App.css";
-import { checkBackendHealth, fetchBackendDrills, type Decision, type Drill } from "./api";
+import {
+  assessDecision,
+  checkBackendHealth,
+  fetchBackendDrills,
+  type AssessmentResult,
+  type Decision,
+  type Drill,
+} from "./api";
 
 
 
@@ -158,6 +165,10 @@ function App() {
   );
   const [activeDrillId, setActiveDrillId] = useState(drills[0].id);
   const [selectedDecision, setSelectedDecision] = useState<Decision | null>(null);
+  const [assessment, setAssessment] = useState<AssessmentResult | null>(null);
+  const [assessmentStatus, setAssessmentStatus] = useState<"idle" | "checking" | "fallback">(
+    "idle"
+  );
   const [completed, setCompleted] = useState<Record<string, number>>({});
   
   useEffect(() => {
@@ -184,7 +195,7 @@ function App() {
     [activeDrillId]
   );
 
-  const score = getScore(activeDrill, selectedDecision);
+  const score = assessment?.score ?? getScore(activeDrill, selectedDecision);
   const isBest = selectedDecision === activeDrill.bestDecision;
   const isUnsafe = selectedDecision
     ? activeDrill.unsafeDecisions.includes(selectedDecision)
@@ -211,13 +222,35 @@ function App() {
       ? 2
       : Object.values(completed).filter((item) => item < 50).length || 1;
 
-  function handleDecision(decision: Decision) {
+  async function handleDecision(decision: Decision) {
     setSelectedDecision(decision);
-    const nextScore = getScore(activeDrill, decision);
+    setAssessment(null);
+
+    const fallbackScore = getScore(activeDrill, decision);
+
     setCompleted((previous) => ({
       ...previous,
-      [activeDrill.id]: nextScore,
+      [activeDrill.id]: fallbackScore,
     }));
+
+    if (backendStatus !== "online") {
+      setAssessmentStatus("fallback");
+      return;
+    }
+
+    try {
+      setAssessmentStatus("checking");
+      const result = await assessDecision(activeDrill.id, decision);
+      setAssessment(result);
+      setAssessmentStatus("idle");
+
+      setCompleted((previous) => ({
+        ...previous,
+        [activeDrill.id]: result.score,
+      }));
+    } catch {
+      setAssessmentStatus("fallback");
+    }
   }
 
   function handleNextDrill() {
@@ -225,6 +258,8 @@ function App() {
     const next = drills[(currentIndex + 1) % drills.length];
     setActiveDrillId(next.id);
     setSelectedDecision(null);
+    setAssessment(null);
+    setAssessmentStatus("idle");
   }
 
   return (
@@ -274,6 +309,8 @@ function App() {
               onClick={() => {
                 setActiveDrillId(drill.id);
                 setSelectedDecision(null);
+                setAssessment(null);
+                setAssessmentStatus("idle");
               }}
             >
               <span>{drill.id}</span>
@@ -341,7 +378,18 @@ function App() {
               )}
               <h3>{getResultTitle(activeDrill, selectedDecision)}</h3>
             </div>
-            <p>{getResultText(activeDrill, selectedDecision)}</p>
+            <p>{assessment?.explanation ?? getResultText(activeDrill, selectedDecision)}</p>
+
+            {selectedDecision && (
+              <p className="agent-source">
+                {assessmentStatus === "checking"
+                  ? "Assessment Agent checking backend multi-agent response..."
+                  : assessment
+                  ? `Scored by backend ${assessment.agent} with ${assessment.risk_critique?.agent ?? "Risk Critic Agent"} and ${assessment.evidence?.agent ?? "Evidence Grounding Agent"}.`
+                  : "Using local fallback scoring because backend assessment was unavailable."}
+              </p>
+            )}
+
             {selectedDecision && (
               <button className="next-drill-button" onClick={handleNextDrill}>
                 Load next drill
@@ -366,6 +414,23 @@ function App() {
             </div>
           ))}
 
+          {assessment?.evidence && (
+            <div className="iq-mode-card">
+              <strong>Grounding mode</strong>
+              <span>{assessment.evidence.mode}</span>
+              <p>{assessment.evidence.summary}</p>
+            </div>
+          )}
+
+          {assessment?.risk_critique && (
+            <div className="risk-flags">
+              <strong>Risk Critic flags</strong>
+              {assessment.risk_critique.risk_flags.map((flag) => (
+                <span key={flag}>{flag}</span>
+              ))}
+            </div>
+          )}
+          
           <div className="risk-card">
             <div className="panel-title">
               <Gauge size={17} />

@@ -666,3 +666,56 @@ p {
   border-color: rgba(154, 232, 255, 0.32);
   color: var(--cyan);
 }
+
+.agent-source {
+  margin-top: 0.85rem;
+  color: var(--muted);
+  font-family: var(--mono);
+  font-size: 0.78rem;
+}
+
+.iq-mode-card,
+.risk-flags {
+  margin-top: 0.9rem;
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  background: rgba(7, 12, 16, 0.58);
+  padding: 0.9rem;
+}
+
+.iq-mode-card strong,
+.risk-flags strong {
+  display: block;
+  margin-bottom: 0.45rem;
+  color: var(--text);
+  font-size: 0.82rem;
+}
+
+.iq-mode-card span {
+  display: inline-flex;
+  margin-bottom: 0.45rem;
+  color: var(--cyan);
+  font-family: var(--mono);
+  font-size: 0.75rem;
+}
+
+.iq-mode-card p {
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.82rem;
+  line-height: 1.5;
+}
+
+.risk-flags {
+  display: grid;
+  gap: 0.5rem;
+}
+
+.risk-flags span {
+  border: 1px solid rgba(255, 142, 126, 0.28);
+  border-radius: 999px;
+  padding: 0.45rem 0.65rem;
+  color: var(--muted);
+  font-size: 0.78rem;
+  line-height: 1.35;
+}

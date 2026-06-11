@@ -17,6 +17,51 @@ export type Drill = {
   managerImpact: string;
 };
 
+export type GroundedReference = {
+  source: string;
+  excerpt: string;
+  confidence: string;
+  grounding_mode: string;
+};
+
+export type EvidenceResult = {
+  agent: string;
+  mode: string;
+  foundry_iq_configured: boolean;
+  query: string;
+  summary: string;
+  grounded_references: GroundedReference[];
+  foundry_iq: {
+    configured: boolean;
+    mode: string;
+    reason: string;
+    query: string;
+    citations: string[];
+    raw_response: unknown;
+  };
+};
+
+export type RiskCritique = {
+  agent: string;
+  risk_level: string;
+  primary_risk: string;
+  risk_flags: string[];
+  recommended_supervisor_action: Decision;
+};
+
+export type AssessmentResult = {
+  drill_id: string;
+  decision: Decision;
+  best_decision: Decision;
+  score: number;
+  verdict: string;
+  explanation: string;
+  policy_refs: string[];
+  evidence?: EvidenceResult;
+  risk_critique?: RiskCritique;
+  agent: string;
+};
+
 type BackendDrill = {
   id: string;
   title: string;
@@ -32,7 +77,7 @@ type BackendDrill = {
   supervisor_lesson: string;
 };
 
-const API_BASE = "http://127.0.0.1:8000";
+const API_BASE = import.meta.env.VITE_API_BASE_URL ?? "http://127.0.0.1:8000";
 
 function mapBackendDrill(drill: BackendDrill): Drill {
   return {
@@ -101,6 +146,28 @@ export async function checkBackendHealth() {
 
   if (!response.ok) {
     throw new Error(`Backend returned ${response.status}`);
+  }
+
+  return response.json();
+}
+
+export async function assessDecision(
+  drillId: string,
+  decision: Decision
+): Promise<AssessmentResult> {
+  const response = await fetch(`${API_BASE}/api/assess`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      drill_id: drillId,
+      decision,
+    }),
+  });
+
+  if (!response.ok) {
+    throw new Error(`Assessment failed with ${response.status}`);
   }
 
   return response.json();
