@@ -91,6 +91,34 @@ def _normalise_drill(raw: dict[str, Any]) -> dict[str, Any]:
         "supervisor_lesson": raw.get("supervisor_lesson") or "A safe supervisor should require evidence before approving AI automation.",
     }
 
+    # Safety cleanup:
+    # Generated scenarios should not treat asking for evidence as dangerous.
+    # Evidence may be incomplete, but it is usually safer than blind approval.
+    if drill["best_decision"] != "evidence" and "evidence" in drill["unsafe_decisions"]:
+        drill["unsafe_decisions"].remove("evidence")
+
+        if "evidence" not in drill["acceptable_decisions"]:
+            drill["acceptable_decisions"].append("evidence")
+
+    # Best decision should never also appear as merely acceptable or unsafe.
+    drill["acceptable_decisions"] = [
+        decision
+        for decision in drill["acceptable_decisions"]
+        if decision != drill["best_decision"]
+    ]
+
+    drill["unsafe_decisions"] = [
+        decision
+        for decision in drill["unsafe_decisions"]
+        if decision != drill["best_decision"]
+        and decision not in drill["acceptable_decisions"]
+    ]
+
+    # Blind approval is usually the dangerous action in generated supervision drills.
+    if drill["best_decision"] != "approve" and "approve" not in drill["unsafe_decisions"]:
+        drill["unsafe_decisions"].append("approve")
+
+
     if not drill["acceptable_decisions"]:
         drill["acceptable_decisions"] = ["evidence", "pause", "escalate"]
 
@@ -138,8 +166,9 @@ Rules:
 - The learner must choose one of: approve, reject, evidence, escalate, pause.
 - Avoid these existing IDs: {existing_ids}
 - The id must start with "GEN-".
-- The recommendation must be a full realistic sentence of at least 12 words.
-- Do not make the recommendation just "approve", "reject", "pause", "escalate", or "ask for evidence".
+- Do not put "evidence" in unsafe_decisions unless asking for more evidence would directly cause harm.
+- For most generated drills, "approve" should be unsafe when the recommendation has hidden risk.
+- If the best decision is "escalate", then "pause" and "evidence" are usually acceptable but incomplete.
 
 JSON shape:
 {{
