@@ -6,6 +6,8 @@ ControlRoom IQ is a Microsoft Agents League **Reasoning Agents** project that tr
 
 Demo video: https://youtu.be/bgDFGwl3gc4
 
+Architecture diagram: [`docs/assets/controlroom-iq-architecture.png`](docs/assets/controlroom-iq-architecture.png)
+
 GitHub repository: https://github.com/fxcepalmzzz/controlroom-iq
 
 ## Tagline
@@ -41,6 +43,12 @@ The learner must choose one of five supervision actions:
 * Pause automation
 
 The system then assesses whether the learner made a safe human-in-the-loop decision.
+
+## Architecture diagram
+
+![ControlRoom IQ architecture](docs/assets/controlroom-iq-architecture.png)
+
+The diagram shows the full ControlRoom IQ flow: React frontend, FastAPI backend, multi-agent orchestration, Microsoft Foundry, Foundry IQ grounded retrieval, synthetic knowledge documents, runtime generated drills, and responsible AI guardrails.
 
 ## Key features
 
@@ -217,6 +225,10 @@ controlroom-iq/
 │  ├─ data/
 │  └─ knowledge/
 ├─ docs/
+│  ├─ assets/
+│  │  ├─ controlroom-iq-architecture.png
+│  │  ├─ controlroom-iq-architecture.svg
+│  │  └─ controlroom-iq-architecture.mmd
 │  ├─ architecture.md
 │  ├─ iq-integration.md
 │  └─ safety.md

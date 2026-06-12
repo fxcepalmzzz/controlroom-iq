@@ -4,6 +4,12 @@ ControlRoom IQ is a human-in-the-loop AI supervision simulator built for the Mic
 
 The system combines a React frontend, a FastAPI backend, specialised reasoning agents, Microsoft Foundry, and Foundry IQ grounded retrieval over synthetic policy documents.
 
+## Diagram
+
+![ControlRoom IQ architecture](assets/controlroom-iq-architecture.png)
+
+The Mermaid source is also available at [`assets/controlroom-iq-architecture.mmd`](assets/controlroom-iq-architecture.mmd). A scalable SVG version is available at [`assets/controlroom-iq-architecture.svg`](assets/controlroom-iq-architecture.svg).
+
 ## High-level architecture
 
 ```text

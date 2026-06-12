@@ -1,0 +1,62 @@
+flowchart LR
+  %% ControlRoom IQ — Reasoning Agents Architecture
+
+  subgraph UX["User Experience"]
+    Learner["Learner / Human Supervisor\nChooses: approve, reject, evidence, escalate, pause"]
+    Frontend["React + Vite Frontend\nSimulation drills\nEvidence sources\nGrounded Supervisor Brief\nReasoning trace + score"]
+    ManagerUI["Manager View\nTeam readiness\nCompleted drills\nAutomation over-trust risk"]
+  end
+
+  subgraph API["FastAPI Backend"]
+    Routes["API Layer\n/api/drills\n/api/assess\n/api/generate-drill\n/health"]
+    Orchestrator["Assessment Orchestrator\nCoordinates live backend pipeline"]
+    ScenarioGen["Scenario Generation Agent\nCreates GEN-* runtime synthetic drills\nValidates formatting + safety labels"]
+    Evidence["Evidence Grounding Agent\nRetrieves or simulates policy evidence"]
+    Critic["Risk Critic Agent\nChecks privacy, bias, stale evidence, missing evidence, automation risk"]
+    Assessment["Assessment Agent\nScores learner decision and explains result"]
+    Manager["Manager Insights Agent\nSummarises readiness and over-trust risk"]
+    Fallback["Local Synthetic Fallback\nKeeps demo reliable if Foundry is unavailable"]
+  end
+
+  subgraph Foundry["Microsoft Foundry + Foundry IQ"]
+    Project["Foundry Project\ncontrolroom-iq\ngpt-4.1-mini deployment"]
+    FoundryAgent["Foundry Evidence Agent\ncontrolroom-iq-evidence-agent"]
+    KB["Foundry IQ Knowledge Base\ncontrolroom-iq-supervision-kb\nAgentic retrieval with citations"]
+    Docs["Synthetic Knowledge Pack\nhuman-approval-thresholds.md\nresponsible-ai-supervision-guide.md\nenterprise-ai-supervision-policies.md\ndomain-control-runbooks.md"]
+  end
+
+  Safety["Responsible AI Guardrails\nSynthetic data only\nNo credentials or PII\nNo autonomous real-world action\nHuman oversight required"]
+
+  Learner --> Frontend
+  Frontend --> Routes
+  Routes --> Orchestrator
+  Routes --> ScenarioGen
+  ScenarioGen --> Project
+  ScenarioGen --> Fallback
+  ScenarioGen --> Frontend
+
+  Orchestrator --> Evidence
+  Evidence --> FoundryAgent
+  FoundryAgent --> KB
+  KB --> Docs
+  Project --> FoundryAgent
+  Evidence --> Fallback
+  Evidence --> Critic
+  Critic --> Assessment
+  Assessment --> Manager
+  Assessment --> Frontend
+  Manager --> ManagerUI
+
+  Docs --> Safety
+  Fallback --> Safety
+  Safety --> Frontend
+
+  classDef ui fill:#0b171a,stroke:#9ae8ff,color:#d7f7ff,stroke-width:2px;
+  classDef api fill:#111a1d,stroke:#ef6f7a,color:#d7f7ff,stroke-width:2px;
+  classDef foundry fill:#102027,stroke:#9ae8ff,color:#d7f7ff,stroke-width:2px;
+  classDef safe fill:#102018,stroke:#7ee2a8,color:#d7f7ff,stroke-width:2px;
+
+  class Learner,Frontend,ManagerUI ui;
+  class Routes,Orchestrator,ScenarioGen,Evidence,Critic,Assessment,Manager api;
+  class Project,FoundryAgent,KB,Docs foundry;
+  class Safety,Fallback safe;
