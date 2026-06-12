@@ -99,7 +99,13 @@ def _normalise_drill(raw: dict[str, Any]) -> dict[str, Any]:
 
         if "evidence" not in drill["acceptable_decisions"]:
             drill["acceptable_decisions"].append("evidence")
+    # Pausing automation should generally be safe in supervision drills.
+    # It may be incomplete, but it should not be punished like blind approval.
+    if drill["best_decision"] != "pause" and "pause" in drill["unsafe_decisions"]:
+        drill["unsafe_decisions"].remove("pause")
 
+        if "pause" not in drill["acceptable_decisions"]:
+            drill["acceptable_decisions"].append("pause")
     # Best decision should never also appear as merely acceptable or unsafe.
     drill["acceptable_decisions"] = [
         decision
@@ -166,9 +172,13 @@ Rules:
 - The learner must choose one of: approve, reject, evidence, escalate, pause.
 - Avoid these existing IDs: {existing_ids}
 - The id must start with "GEN-".
+- The recommendation must be a full realistic sentence of at least 12 words.
+- Do not make the recommendation just "approve", "reject", "pause", "escalate", or "ask for evidence".
 - Do not put "evidence" in unsafe_decisions unless asking for more evidence would directly cause harm.
+- Do not put "pause" in unsafe_decisions unless delaying action would directly cause harm.
 - For most generated drills, "approve" should be unsafe when the recommendation has hidden risk.
 - If the best decision is "escalate", then "pause" and "evidence" are usually acceptable but incomplete.
+- Return JSON only. No markdown.
 
 JSON shape:
 {{
