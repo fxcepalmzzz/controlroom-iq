@@ -2,142 +2,174 @@
 
 **Human-in-the-loop flight simulator for AI supervisors.**
 
-ControlRoom IQ is a Microsoft Agents League Reasoning Agents project that trains employees to safely supervise AI agents before automation reaches the real world.
+ControlRoom IQ is a Microsoft Agents League **Reasoning Agents** project that trains employees to safely supervise AI agents before automation reaches real enterprise workflows.
 
-Instead of building another static certification planner, ControlRoom IQ puts learners inside realistic AI control-room drills. Each drill presents an AI agent recommendation, supporting policy evidence, hidden risks, and a required human decision: approve, reject, ask for evidence, escalate, or pause automation.
+Demo video: https://youtu.be/bgDFGwl3gc4
 
-## Why this matters
+GitHub repository: https://github.com/fxcepalmzzz/controlroom-iq
 
-Enterprise AI is no longer just answering questions. Agents are beginning to recommend actions, trigger workflows, draft decisions, and automate business processes.
+## Tagline
 
-The missing skill is not only building agents. It is knowing when humans should stop them.
+Train humans to supervise AI before agents act in the real world.
 
-ControlRoom IQ helps organisations train people for safe AI supervision before agents affect real workflows.
+## Problem
 
-## Demo scenario
+Enterprise AI agents are starting to recommend actions, influence decisions, and trigger workflows. The risk is that employees may over-trust those recommendations without checking whether the AI has enough evidence, whether the source is current, or whether human approval is required.
 
-A simulated workplace AI agent recommends:
+The missing enterprise skill is not only building AI agents. It is knowing when humans should stop them.
 
-> Remove Employee L-1004 from the promotion shortlist due to low predicted leadership fit.
+ControlRoom IQ trains that supervision skill through realistic synthetic drills.
 
-The learner must decide whether to approve, reject, ask for evidence, escalate, or pause the recommendation.
+## What the app does
 
-ControlRoom IQ then scores the decision, explains the hidden risk, retrieves grounded policy evidence, and shows the multi-agent reasoning trace.
+ControlRoom IQ presents the learner with workplace AI supervision scenarios. Each scenario includes:
 
-## Core features
+* A simulated AI worker recommendation
+* A hidden risk
+* Synthetic policy evidence
+* A required human decision
+* A score and explanation
+* A visible multi-agent reasoning trace
+* Manager-level readiness insights
 
-* Interactive AI supervision drills
-* Multi-agent reasoning trace
-* Microsoft Foundry IQ evidence grounding
-* Local synthetic evidence fallback
-* Safe / unsafe decision scoring
-* Manager readiness dashboard
+The learner must choose one of five supervision actions:
+
+* Approve
+* Reject
+* Ask for evidence
+* Escalate
+* Pause automation
+
+The system then assesses whether the learner made a safe human-in-the-loop decision.
+
+## Key features
+
+* 15 curated synthetic AI supervision drills
+* Runtime AI-generated supervision drills
+* Microsoft Foundry integration
+* Foundry IQ grounded evidence retrieval
+* Foundry evidence agent connected to a synthetic knowledge base
+* Multi-agent assessment pipeline
+* Grounded Supervisor Brief with source documents
+* Risk Critic flags for unsafe automation patterns
+* Manager Insights Agent readiness summary
 * Backend online/offline fallback mode
 * Synthetic data only
-* Human-in-the-loop safety design
+* No real customer data, employee data, credentials, or confidential information
+
+## Microsoft Agents League track fit
+
+ControlRoom IQ is built for the **Reasoning Agents** track.
+
+It demonstrates:
+
+* Multi-agent system design
+* Multi-step reasoning
+* Grounded knowledge retrieval through Microsoft Foundry IQ
+* Visible orchestration traces
+* Human oversight for important decisions
+* Responsible AI guardrails
+* Synthetic data and synthetic documents only
+
+## Microsoft IQ integration
+
+ControlRoom IQ integrates **Microsoft Foundry IQ** as the main Microsoft IQ layer.
+
+The app uses a Microsoft Foundry project and a Foundry evidence agent connected to a Foundry IQ knowledge base. The knowledge base contains synthetic policy and runbook documents. When a learner submits a decision, the Evidence Grounding Agent queries the Foundry IQ agent and returns a grounded supervisor brief with source document references.
+
+If Foundry IQ is unavailable during local testing or demo conditions, the app uses local synthetic policy references as a safe fallback so the simulator remains demoable without real enterprise data.
 
 ## Multi-agent architecture
 
-ControlRoom IQ uses a multi-agent supervision workflow:
+ControlRoom IQ uses specialised agents with clear responsibilities.
 
-1. **Scenario Director Agent** loads realistic workplace AI supervision drills.
-2. **Simulated AI Worker Agent** produces the AI recommendation the learner must supervise.
-3. **Evidence Grounding Agent** retrieves policy evidence from a Microsoft Foundry agent connected to a Foundry IQ knowledge base. If Foundry is unavailable, it falls back to local synthetic policy references.
-4. **Risk Critic Agent** checks for weak evidence, stale retrieval, bias, privacy leakage, high-impact decisions, and unsafe automation.
-5. **Assessment Agent** scores the learner decision against a safe-supervision rubric.
-6. **Manager Insights Agent** updates team readiness, over-trust risk, and recommended next drills.
+1. **Scenario Director Agent**
+   Creates curated and runtime-generated synthetic AI supervision drills.
 
-## Microsoft Foundry IQ Integration
+2. **Simulated AI Worker Agent**
+   Produces the AI recommendation that the human learner must supervise.
 
-ControlRoom IQ integrates with Microsoft Foundry and Foundry IQ for grounded policy evidence.
+3. **Evidence Grounding Agent**
+   Retrieves policy evidence through Microsoft Foundry IQ when configured, with local synthetic fallback references when unavailable.
 
-The live integration path uses:
+4. **Risk Critic Agent**
+   Checks for missing evidence, stale sources, privacy leakage, bias, governance risk, and unsafe automation.
 
-* **Microsoft Foundry project:** `controlroom-iq`
-* **Model deployment:** `gpt-4.1-mini`
-* **Foundry IQ resource:** `controlroom-iq-knowledge`
-* **Foundry IQ knowledge base:** `controlroom-iq-supervision-kb`
-* **Foundry agent:** `controlroom-iq-evidence-agent`
-* **Synthetic knowledge source:** `controlroom-iq-policy-kb`
+5. **Assessment Agent**
+   Scores the learner decision against the safe-supervision rubric and explains whether the intervention was appropriate.
 
-The uploaded knowledge source contains only synthetic markdown documents created for this hackathon demo. It does not contain real employee data, customer data, credentials, confidential information, or PII.
+6. **Manager Insights Agent**
+   Summarises team readiness, completed drills, and automation over-trust risk.
 
-When a learner makes a supervision decision, the backend calls:
+## Live assessment flow
+
+When the learner chooses a supervision action, the backend runs this live pipeline:
 
 ```text
-POST /api/assess
+Learner decision
+      ↓
+FastAPI backend
+      ↓
+Evidence Grounding Agent
+      ↓
+Microsoft Foundry IQ evidence retrieval
+      ↓
+Risk Critic Agent
+      ↓
+Assessment Agent
+      ↓
+Score, explanation, evidence, risk flags, and trace
+      ↓
+Manager Insights Agent summary
 ```
 
-The request flows through the multi-agent orchestration layer:
+Before a decision is submitted, the frontend shows the full conceptual six-step supervision workflow. After a decision is submitted, it switches to the live backend orchestration trace returned by the assessment pipeline.
 
-```text
-User decision
-→ ControlRoom IQ Orchestrator
-→ Evidence Grounding Agent
-→ Microsoft Foundry agent connected to Foundry IQ
-→ Risk Critic Agent
-→ Assessment Agent
-→ Frontend orchestration trace
-```
+## Runtime generated drills
 
-When Foundry is configured in `.env`, the Evidence Grounding Agent calls the Microsoft Foundry agent. The Foundry agent retrieves evidence from the Foundry IQ knowledge base and returns source document references such as:
+ControlRoom IQ also supports runtime AI-generated drills.
 
-```text
-human-approval-thresholds.md
-responsible-ai-supervision-guide.md
-```
+The backend Scenario Director Agent creates new synthetic enterprise supervision scenarios using the configured Foundry model. Generated drills are marked with a `GEN-` identifier and an “AI-generated drill · runtime synthetic” badge in the UI.
 
-If Foundry credentials, local Azure authentication, or the Foundry endpoint are unavailable, the backend safely falls back to local synthetic policy references so the demo remains reliable.
+Generated drills are assessed through the same pipeline as curated drills:
 
-This means the project is demoable both with and without a live Azure session, while still showing a real Microsoft Foundry IQ integration path when configured.
+* Evidence Grounding Agent
+* Foundry IQ grounding
+* Risk Critic Agent
+* Assessment Agent
+* Manager Insights Agent
 
-## Environment Configuration
+Generation guardrails ensure that runtime drills use fictional entities, avoid real personal data, avoid credentials, and use safe scoring labels.
 
-Create a local `.env` file from `.env.example`.
+## Synthetic knowledge base
 
-```env
-VITE_API_BASE_URL=http://127.0.0.1:8000
+The Foundry IQ knowledge base uses synthetic documents only, including:
 
-CONTROLROOM_IQ_ENV=local
-CONTROLROOM_IQ_DATA_MODE=synthetic
-CONTROLROOM_IQ_BACKEND_HOST=127.0.0.1
-CONTROLROOM_IQ_BACKEND_PORT=8000
+* `human-approval-thresholds.md`
+* `responsible-ai-supervision-guide.md`
+* `enterprise-ai-supervision-policies.md`
+* `domain-control-runbooks.md`
 
-AZURE_AI_PROJECT_ENDPOINT=
-AZURE_AI_MODEL_DEPLOYMENT=gpt-4.1-mini
-FOUNDRY_IQ_KNOWLEDGE_BASE=
-FOUNDRY_AGENT_NAME=
+These documents describe fictional AI supervision policies, approval thresholds, escalation rules, data handling rules, and domain-specific runbooks.
 
-USE_SYNTHETIC_DATA=true
-ALLOW_REAL_ENTERPRISE_DATA=false
-ALLOW_AUTONOMOUS_ACTIONS=false
-```
+## Safety and data handling
 
-Do not commit `.env`.
+ControlRoom IQ uses synthetic data only.
 
-For local Foundry authentication, install Azure CLI and run:
+The project does not include:
 
-```powershell
-az login
-```
+* Real customer data
+* Real employee data
+* Real HR records
+* Real procurement records
+* Real support tickets
+* Real emails
+* Credentials
+* API keys
+* Confidential company policies
+* Autonomous execution against business systems
 
-The backend uses `DefaultAzureCredential` through the Microsoft Foundry SDK. If Azure authentication is not available, the app falls back to local synthetic evidence.
-
-## Foundry Smoke Tests
-
-The backend includes two optional smoke tests for the Foundry integration.
-
-```powershell
-cd backend
-.venv\Scripts\activate
-
-python test_foundry_connection.py
-python test_foundry_agent.py
-```
-
-`test_foundry_connection.py` verifies that the backend can authenticate to the Microsoft Foundry project.
-
-`test_foundry_agent.py` verifies that the Foundry agent can retrieve grounded evidence from the Foundry IQ knowledge base. A successful response should reference the synthetic source documents.
+The app is a training simulator. It does not make real workplace decisions or trigger real business actions.
 
 ## Tech stack
 
@@ -155,9 +187,16 @@ Backend:
 * FastAPI
 * Microsoft Foundry SDK
 * Azure Identity
-* Synthetic JSON drills
-* Synthetic markdown knowledge documents
-* Microsoft Foundry IQ knowledge base
+* Synthetic JSON datasets
+* Synthetic markdown knowledge base
+
+Microsoft integration:
+
+* Microsoft Foundry project
+* Foundry model deployment
+* Foundry IQ knowledge base
+* Foundry evidence agent
+* Azure AI Search-backed knowledge retrieval
 
 ## Project structure
 
@@ -169,19 +208,42 @@ controlroom-iq/
 │  │  ├─ App.css
 │  │  ├─ api.ts
 │  │  └─ main.tsx
+│  ├─ package.json
+│  └─ vite.config.ts
 ├─ backend/
 │  ├─ main.py
 │  ├─ requirements.txt
-│  ├─ test_foundry_connection.py
-│  ├─ test_foundry_agent.py
 │  ├─ agents/
 │  ├─ data/
 │  └─ knowledge/
 ├─ docs/
 │  ├─ architecture.md
+│  ├─ iq-integration.md
 │  └─ safety.md
 ├─ .env.example
 └─ README.md
+```
+
+## Environment variables
+
+Create a local `.env` file for development. Do not commit `.env`.
+
+```env
+VITE_API_BASE_URL=http://127.0.0.1:8000
+
+CONTROLROOM_IQ_ENV=local
+CONTROLROOM_IQ_DATA_MODE=synthetic
+CONTROLROOM_IQ_BACKEND_HOST=127.0.0.1
+CONTROLROOM_IQ_BACKEND_PORT=8000
+
+AZURE_AI_PROJECT_ENDPOINT=
+AZURE_AI_MODEL_DEPLOYMENT=gpt-4.1-mini
+FOUNDRY_IQ_KNOWLEDGE_BASE=controlroom-iq-supervision-kb
+FOUNDRY_AGENT_NAME=controlroom-iq-evidence-agent
+
+USE_SYNTHETIC_DATA=true
+ALLOW_REAL_ENTERPRISE_DATA=false
+ALLOW_AUTONOMOUS_ACTIONS=false
 ```
 
 ## Run locally
@@ -190,7 +252,9 @@ Backend:
 
 ```powershell
 cd backend
+python -m venv .venv
 .venv\Scripts\activate
+pip install -r requirements.txt
 uvicorn main:app --reload
 ```
 
@@ -202,42 +266,38 @@ npm install
 npm run dev
 ```
 
-Local URLs:
+Open the frontend URL shown by Vite.
 
-```text
-Frontend: http://localhost:5173
-Backend: http://127.0.0.1:8000
-FastAPI docs: http://127.0.0.1:8000/docs
+## Validation
+
+Frontend build:
+
+```powershell
+cd frontend
+npm run build
 ```
 
-## Safety and data handling
+Backend compile check:
 
-ControlRoom IQ uses synthetic data only.
+```powershell
+cd backend
+.venv\Scripts\activate
+python -m py_compile agents\foundry_iq_client.py agents\evidence_grounding_agent.py agents\orchestrator.py agents\assessment_agent.py main.py
+```
 
-The project does not use:
+Foundry connection checks:
 
-* real employee data
-* real customer data
-* real HR records
-* credentials
-* confidential company documents
-* PII
-* autonomous actions against real systems
+```powershell
+cd backend
+.venv\Scripts\activate
+python test_foundry_connection.py
+python test_foundry_agent.py
+```
 
-The simulator is designed to train human supervision decisions, not to make real workplace decisions.
+## Responsible AI position
 
-## Hackathon positioning
+ControlRoom IQ is designed around human oversight.
 
-ControlRoom IQ fits the Reasoning Agents track because it demonstrates:
+The app does not encourage autonomous action. It trains people to recognise when an AI recommendation needs more evidence, escalation, rejection, or paused automation.
 
-* multi-agent orchestration
-* grounded evidence retrieval with Microsoft Foundry IQ
-* critic / verifier reasoning
-* human-in-the-loop decision making
-* safe fallback behaviour
-* synthetic-only demo data
-* a polished interactive user experience
-
-The core idea:
-
-> The missing enterprise skill is not only building AI agents. It is knowing when humans should stop them.
+The goal is to help organisations adopt AI agents more safely by preparing humans to supervise them responsibly.

@@ -1,173 +1,207 @@
-# Foundry IQ Integration Plan
+# Foundry IQ Integration
 
 ## Overview
 
-ControlRoom IQ is designed as a human-in-the-loop training simulator for AI supervisor readiness.
+ControlRoom IQ integrates **Microsoft Foundry IQ** as the grounded knowledge layer for AI supervision drills.
 
-The current prototype uses a synthetic Foundry IQ-style grounding layer. This means the application demonstrates the intended evidence-grounded workflow using local JSON drills and synthetic markdown policy documents, without connecting to a live Microsoft Foundry or Foundry IQ deployment.
+The purpose of Foundry IQ in this project is to ground each assessment in approved synthetic policy documents instead of relying only on unsupported model output.
 
-This is intentional for the hackathon prototype because the project must remain safe, portable, and demo-friendly.
+When a learner submits a supervision decision, the Evidence Grounding Agent queries a Microsoft Foundry evidence agent connected to the Foundry IQ knowledge base. The returned answer is shown in the app as the **Grounded Supervisor Brief**.
 
----
+## Current implementation
 
-## Current prototype state
+The current implementation uses:
 
-The current version is a local synthetic demo.
+* Microsoft Foundry project
+* Foundry model deployment
+* Foundry evidence agent
+* Foundry IQ knowledge base
+* Synthetic markdown policy documents
+* FastAPI backend integration
+* Local synthetic fallback when Foundry IQ is unavailable
 
-It includes:
+The app does not use real customer data, real employee data, credentials, or confidential company documents.
 
-* Synthetic enterprise drills stored in local JSON
-* Synthetic policy and runbook references
-* A FastAPI backend for drill loading, assessment, and manager summaries
-* A React frontend that displays AI recommendations, policy evidence, hidden risks, and supervisor decisions
-* A multi-agent reasoning trace that shows the intended architecture
-* Offline frontend fallback data when the backend is unavailable
+## Configured Foundry components
 
-The evidence shown in the UI is not retrieved from a live Foundry IQ index yet.
+The project is designed around the following Foundry configuration:
 
-Instead, the project simulates the same pattern:
+```text
+Foundry project:
+controlroom-iq
 
-1. A workplace AI recommendation is generated or selected.
-2. Relevant policy-style references are attached to the drill.
-3. A risk critique identifies why the recommendation may be unsafe.
-4. The learner makes a human supervision decision.
-5. The assessment layer scores the decision against a safe-supervision rubric.
+Model deployment:
+gpt-4.1-mini
 
----
+Foundry IQ knowledge base:
+controlroom-iq-supervision-kb
 
-## Why synthetic data is used
+Foundry evidence agent:
+controlroom-iq-evidence-agent
 
-ControlRoom IQ uses synthetic data only.
+Knowledge source:
+expanded synthetic AI supervision policy pack
+```
 
-The prototype does not include:
+The Foundry evidence agent is instructed to:
 
-* real employee data
-* real customer data
-* real HR records
-* real procurement documents
-* real support tickets
-* real credentials
-* confidential company policies
-* autonomous execution against business systems
+* Use only the connected synthetic knowledge base
+* Return concise policy evidence
+* Include source document references
+* Avoid inventing policies
+* Say when evidence is insufficient
+* Never use real employee, customer, or confidential data
 
-This keeps the hackathon demo safe while still showing the intended enterprise workflow.
+## Synthetic knowledge base
 
-The goal is to train safe human supervision behaviour, not to make real workplace decisions.
+The Foundry IQ knowledge base is built from synthetic supervision documents.
 
----
+Example documents:
 
-## Intended Microsoft Foundry / Foundry IQ architecture
+* `human-approval-thresholds.md`
+* `responsible-ai-supervision-guide.md`
+* `enterprise-ai-supervision-policies.md`
+* `domain-control-runbooks.md`
 
-In a fuller Microsoft implementation, ControlRoom IQ would use Microsoft Foundry and Foundry IQ as the grounding and orchestration layer.
+These documents contain fictional guidance for:
 
-A possible production architecture would include:
+* Human approval thresholds
+* Escalation rules
+* Responsible AI supervision
+* Privacy and data minimisation
+* Procurement approval
+* HR decision risk
+* IT access governance
+* Finance and payroll validation
+* Safety and operations escalation
+* Audit and compliance closure
 
-1. **Microsoft Foundry knowledge sources**
+## Evidence grounding flow
 
-   Synthetic or approved company policy documents would be uploaded into a Foundry knowledge layer.
+```text
+1. Learner chooses a supervision action.
+2. Frontend sends the decision to POST /api/assess.
+3. Backend builds a grounding query from the drill context.
+4. Evidence Grounding Agent calls the Foundry evidence agent.
+5. Foundry evidence agent retrieves from the Foundry IQ knowledge base.
+6. Foundry IQ returns grounded evidence and source documents.
+7. Risk Critic Agent analyses the hidden risk.
+8. Assessment Agent scores the learner decision.
+9. Frontend displays evidence, risk flags, score, trace, and Grounded Supervisor Brief.
+```
 
-   Example sources:
+## What the Grounded Supervisor Brief shows
 
-   * HR AI usage policy
-   * promotion and performance review guidelines
-   * customer refund policy
-   * procurement approval policy
-   * vendor compliance checklist
-   * IT access removal runbook
-   * privacy and data handling policy
-   * incident escalation playbook
+The Grounded Supervisor Brief displays the Foundry-grounded output returned by the Evidence Grounding Agent.
 
-2. **Foundry IQ grounded retrieval**
+It usually includes:
 
-   For each drill, the Evidence Grounding Agent would retrieve relevant policy sections from the knowledge layer.
+* Evidence bullets
+* Recommended supervisor action
+* Source document names
 
-   Instead of hardcoded policy references, the system would return grounded evidence with citations.
+This makes the assessment explainable and demonstrates that the system is not only scoring from hardcoded UI text. It is grounding the supervision decision in a policy knowledge layer.
 
-3. **Risk Critic Agent**
+## Fallback behaviour
 
-   The Risk Critic Agent would inspect the AI recommendation and retrieved evidence.
+ControlRoom IQ includes safe fallback behaviour.
 
-   It would check for:
+If Foundry IQ is unavailable, missing, rate-limited, or misconfigured, the backend returns local synthetic policy references instead of failing the demo.
 
-   * missing evidence
-   * stale policies
-   * biased or high-impact recommendations
-   * privacy leakage
-   * automation that bypasses required human approval
-   * weak or contradictory citations
+The UI labels the grounding mode so the user can see whether the assessment used:
 
-4. **Assessment Agent**
+* `foundry_iq_agent`
+* `foundry_iq_error_fallback`
+* `synthetic_fallback`
 
-   The Assessment Agent would compare the learner's decision against the drill's safety rubric.
+This is intentional. The project remains honest about grounding mode while staying demoable and safe.
 
-   It would explain whether the learner correctly approved, rejected, escalated, asked for evidence, or paused automation.
+## Why Foundry IQ fits this project
 
-5. **Manager Insights Agent**
+Foundry IQ is a strong fit because ControlRoom IQ is about policy-grounded human oversight.
 
-   The Manager Insights Agent would summarize readiness trends.
+The simulator needs to answer questions such as:
 
-   It could identify patterns such as:
+* Does this AI recommendation require human approval?
+* Is the evidence current and relevant?
+* Does the recommendation involve sensitive data?
+* Should the supervisor reject, escalate, pause, or ask for more evidence?
+* Which policy source supports the safer action?
 
-   * teams that approve too quickly
-   * users who miss stale evidence
-   * departments that need more high-impact decision drills
-   * learners who correctly escalate risk
+Foundry IQ provides the grounded retrieval layer for those questions.
 
----
+## Relationship to the Reasoning Agents challenge
 
-## Example Foundry IQ workflow
+The Reasoning Agents challenge asks for a multi-agent system using Microsoft Foundry that demonstrates reasoning, orchestration, grounded knowledge, semantic business understanding, and production-minded patterns.
 
-A learner opens a drill:
+ControlRoom IQ addresses this by combining:
 
-> A support AI agent recommends automatically denying a customer refund.
+* Specialised agents
+* Microsoft Foundry
+* Foundry IQ grounded retrieval
+* Multi-step assessment
+* Risk critique
+* Visible orchestration trace
+* Synthetic data only
+* Human oversight guardrails
+* Manager readiness insights
 
-The Evidence Grounding Agent queries the Foundry IQ knowledge source.
+## Safety and privacy
 
-It retrieves:
+The project uses synthetic data only.
 
-* current refund policy
-* warranty exception policy
-* customer-impacting automation standard
+It does not include:
 
-The Risk Critic Agent identifies that the AI recommendation may be using a stale refund rule.
+* Real employee data
+* Real customer data
+* Real HR records
+* Real support tickets
+* Real procurement records
+* Real emails
+* Credentials
+* API keys
+* Connection strings
+* Confidential company policies
+* Autonomous execution against business systems
 
-The learner chooses whether to approve, reject, ask for evidence, escalate, or pause automation.
+The project is a training simulator and does not make real workplace decisions.
 
-The Assessment Agent scores the learner's response.
+## Environment variables
 
-The Manager Insights Agent updates readiness metrics.
+The local `.env` file should contain the project-specific Foundry settings. It must not be committed.
 
----
+```env
+AZURE_AI_PROJECT_ENDPOINT=
+AZURE_AI_MODEL_DEPLOYMENT=gpt-4.1-mini
+FOUNDRY_IQ_KNOWLEDGE_BASE=controlroom-iq-supervision-kb
+FOUNDRY_AGENT_NAME=controlroom-iq-evidence-agent
+```
 
-## Honest hackathon disclosure
+Use `.env.example` as the committed template.
 
-The current version of ControlRoom IQ does not yet connect to a real Microsoft Foundry or Foundry IQ instance.
+## Validation scripts
 
-The current version is a local synthetic prototype that demonstrates the intended product experience, safety design, and multi-agent reasoning architecture.
+The backend includes smoke tests for Foundry setup:
 
-A real Foundry integration would require:
+```powershell
+cd backend
+.venv\Scripts\activate
+python test_foundry_connection.py
+python test_foundry_agent.py
+```
 
-* a Microsoft Foundry project
-* configured model deployment
-* configured knowledge sources
-* secure environment variables
-* retrieval and citation logic
-* production-grade authentication and access controls
+These confirm that the Foundry project client can connect and that the Foundry evidence agent can retrieve from the connected synthetic knowledge base.
 
-The prototype is therefore best described as:
+## Summary
 
-> A synthetic Foundry IQ-style human-in-the-loop AI supervision simulator, designed for future Microsoft Foundry and Foundry IQ integration.
+ControlRoom IQ uses Foundry IQ as the policy grounding layer for a responsible AI supervision simulator.
 
----
+The project demonstrates how enterprise AI training can move beyond static quizzes by combining:
 
-## Why this matters
+* Grounded evidence
+* Risk critique
+* Human-in-the-loop decisions
+* Runtime generated scenarios
+* Manager readiness insights
 
-Most AI training tools focus on prompting, productivity, or certification checklists.
-
-ControlRoom IQ focuses on a different enterprise problem:
-
-Can employees safely supervise AI agents before those agents affect real workflows?
-
-Foundry IQ grounding would make that training more realistic by connecting each drill to trusted organisational knowledge.
-
-The result is a practical training simulator for responsible AI adoption, where humans learn when to trust, challenge, escalate, or stop AI recommendations.
+The system is intentionally synthetic, transparent, and safety-focused for hackathon submission.
