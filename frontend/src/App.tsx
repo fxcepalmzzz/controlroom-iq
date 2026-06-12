@@ -15,6 +15,7 @@ import {
 import "./App.css";
 import {
   assessDecision,
+  generateDrill,
   checkBackendHealth,
   fetchBackendDrills,
   type AssessmentResult,
@@ -211,6 +212,8 @@ function App() {
       return (current + 1) % drills.length;
     });
   }
+  const [generatedDrillId, setGeneratedDrillId] = useState<string | null>(null);
+  const [generationStatus, setGenerationStatus] = useState<"idle" | "checking" | "error">("idle");
 
   const score = assessment?.score ?? getScore(activeDrill, selectedDecision);
   const visibleAgentSteps =
@@ -269,7 +272,7 @@ function App() {
 
     try {
       setAssessmentStatus("checking");
-      const result = await assessDecision(activeDrill.id, decision);
+      const result = await assessDecision(activeDrill.id, decision, activeDrill);
       setAssessment(result);
       setAssessmentStatus("idle");
 
@@ -281,7 +284,32 @@ function App() {
       setAssessmentStatus("fallback");
     }
   }
+  async function handleGenerateDrill() {
+    if (generationStatus === "checking") {
+      return;
+    }
 
+    if (generatedDrillId && completed[generatedDrillId] === undefined) {
+      return;
+    }
+
+    try {
+      setGenerationStatus("checking");
+
+      const generatedDrill = await generateDrill(drills.map((drill) => drill.id));
+
+      setDrills((previous) => [...previous, generatedDrill]);
+      setActiveDrillId(generatedDrill.id);
+      setGeneratedDrillId(generatedDrill.id);
+      setDrillWindowStart(drills.length);
+      setSelectedDecision(null);
+      setAssessment(null);
+      setAssessmentStatus("idle");
+      setGenerationStatus("idle");
+    } catch {
+      setGenerationStatus("error");
+    }
+  }
   function handleNextDrill() {
     const currentIndex = drills.findIndex((drill) => drill.id === activeDrill.id);
     const nextIndex = (currentIndex + 1) % drills.length;
@@ -331,7 +359,25 @@ function App() {
             <Brain size={17} />
             <span>Simulation Drills</span>
           </div>
+          <button
+            className="generate-drill-button"
+            type="button"
+            onClick={handleGenerateDrill}
+            disabled={
+              generationStatus === "checking" ||
+              Boolean(generatedDrillId && completed[generatedDrillId] === undefined)
+            }
+          >
+            {generationStatus === "checking"
+              ? "Generating AI drill..."
+              : generatedDrillId && completed[generatedDrillId] === undefined
+              ? "Complete generated drill first"
+              : "Generate AI drill"}
+          </button>
 
+          {generationStatus === "error" && (
+            <p className="generate-error">Could not generate a new drill. Try again.</p>
+          )}
           <button
             className="drill-scroll-button"
             type="button"

@@ -4,6 +4,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from agents.orchestrator import run_supervision_drill
 from agents.manager_insights_agent import build_manager_summary
 from agents.scenario_director_agent import get_drills, get_drill_by_id
+from agents.scenario_generation_agent import generate_supervision_drill
 
 app = FastAPI(
     title="ControlRoom IQ Backend",
@@ -43,9 +44,16 @@ def read_drill(drill_id: str):
 def assess(payload: dict):
     drill_id = payload.get("drill_id")
     decision = payload.get("decision")
+    custom_drill = payload.get("drill")
 
-    drill = get_drill_by_id(drill_id)
+    drill = custom_drill if custom_drill else get_drill_by_id(drill_id)
     return run_supervision_drill(drill, decision)
+
+@app.post("/api/generate-drill")
+def generate_drill(payload: dict | None = None):
+    payload = payload or {}
+    existing_ids = payload.get("existing_ids", [])
+    return generate_supervision_drill(existing_ids=existing_ids)
 
 
 @app.get("/api/manager-summary")

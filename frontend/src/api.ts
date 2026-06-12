@@ -96,6 +96,8 @@ type BackendDrill = {
   supervisor_lesson: string;
 };
 
+type BackendGeneratedDrill = BackendDrill;
+
 const API_BASE = import.meta.env.VITE_API_BASE_URL ?? "http://127.0.0.1:8000";
 
 function mapBackendDrill(drill: BackendDrill): Drill {
@@ -250,24 +252,57 @@ export async function checkBackendHealth() {
   return response.json();
 }
 
-export async function assessDecision(
-  drillId: string,
-  decision: Decision
-): Promise<AssessmentResult> {
-  const response = await fetch(`${API_BASE}/api/assess`, {
+function mapFrontendDrillToBackend(drill: Drill): BackendDrill {
+  return {
+    id: drill.id,
+    title: drill.title,
+    department: drill.department,
+    severity: drill.severity,
+    ai_agent: drill.aiAgent,
+    recommendation: drill.recommendation,
+    hidden_risk: drill.hiddenRisk,
+    best_decision: drill.bestDecision,
+    acceptable_decisions: drill.acceptableDecisions,
+    unsafe_decisions: drill.unsafeDecisions,
+    policy_refs: drill.policyRefs,
+    supervisor_lesson: drill.supervisorLesson,
+  };
+}
+export async function generateDrill(existingIds: string[]): Promise<Drill> {
+  const response = await fetch(`${API_BASE}/api/generate-drill`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
     },
     body: JSON.stringify({
-      drill_id: drillId,
-      decision,
+      existing_ids: existingIds,
     }),
   });
 
   if (!response.ok) {
-    throw new Error(`Assessment failed with ${response.status}`);
+    throw new Error(`Drill generation failed with ${response.status}`);
   }
+
+  const data = (await response.json()) as BackendGeneratedDrill;
+  return mapBackendDrill(data);
+}
+
+  export async function assessDecision(
+    drillId: string,
+    decision: Decision,
+    drill?: Drill
+  ): Promise<AssessmentResult> {
+    const response = await fetch(`${API_BASE}/api/assess`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        drill_id: drillId,
+        decision,
+        drill: drill ? mapFrontendDrillToBackend(drill) : undefined,
+      }),
+    });
 
   return response.json();
 }
