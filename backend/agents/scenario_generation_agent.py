@@ -56,13 +56,29 @@ def _extract_json(text: str) -> dict[str, Any]:
 
 
 def _normalise_drill(raw: dict[str, Any]) -> dict[str, Any]:
+    raw_id = str(raw.get("id") or "")
+
+    generated_id = (
+        raw_id
+        if raw_id.startswith("GEN-")
+        else f"GEN-{uuid.uuid4().hex[:6].upper()}"
+    )
+
+    raw_recommendation = str(raw.get("recommendation") or "").strip()
+
+    if len(raw_recommendation) < 35:
+        raw_recommendation = (
+            "Approve the AI-recommended enterprise action because it appears to match "
+            "a prior pattern and may reduce manual review time."
+        )
+
     drill = {
-        "id": raw.get("id") or f"GEN-{uuid.uuid4().hex[:6].upper()}",
+        "id": generated_id,
         "title": raw.get("title") or "Generated Supervision Drill",
         "department": raw.get("department") or "Enterprise Operations",
         "severity": raw.get("severity") if raw.get("severity") in ALLOWED_SEVERITIES else "High",
         "ai_agent": raw.get("ai_agent") or "Generated AI Worker Agent",
-        "recommendation": raw.get("recommendation") or "Review the generated AI recommendation.",
+        "recommendation": raw_recommendation,
         "hidden_risk": raw.get("hidden_risk") or "The recommendation may be missing relevant evidence or human review.",
         "best_decision": raw.get("best_decision") if raw.get("best_decision") in ALLOWED_DECISIONS else "evidence",
         "acceptable_decisions": [
@@ -121,7 +137,9 @@ Rules:
 - Make the scenario realistic for enterprise AI supervision.
 - The learner must choose one of: approve, reject, evidence, escalate, pause.
 - Avoid these existing IDs: {existing_ids}
-- Return JSON only. No markdown.
+- The id must start with "GEN-".
+- The recommendation must be a full realistic sentence of at least 12 words.
+- Do not make the recommendation just "approve", "reject", "pause", "escalate", or "ask for evidence".
 
 JSON shape:
 {{

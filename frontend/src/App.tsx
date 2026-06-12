@@ -201,7 +201,8 @@ function App() {
     [activeDrillId, drills]
   );
 
-  const isGeneratedDrill = activeDrill.id.startsWith("GEN-");
+  const isGeneratedDrill =
+    activeDrill.id.startsWith("GEN-") || activeDrill.id === generatedDrillId;
 
   const visibleDrills = Array.from(
     { length: Math.min(visibleDrillCount, drills.length) },
