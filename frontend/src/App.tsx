@@ -23,8 +23,6 @@ import {
   type Drill,
 } from "./api";
 
-
-
 const fallbackDrills: Drill[] = [
   {
     id: "HR-014",
@@ -161,17 +159,22 @@ function getResultText(drill: Drill, decision: Decision | null) {
 
 function App() {
   const [drills, setDrills] = useState<Drill[]>(fallbackDrills);
-  const [backendStatus, setBackendStatus] = useState<"checking" | "online" | "offline">(
-    "checking"
-  );
-  const [activeDrillId, setActiveDrillId] = useState(drills[0].id);
+  const [backendStatus, setBackendStatus] = useState<
+    "checking" | "online" | "offline"
+  >("checking");
+  const [activeDrillId, setActiveDrillId] = useState(fallbackDrills[0].id);
   const [selectedDecision, setSelectedDecision] = useState<Decision | null>(null);
   const [assessment, setAssessment] = useState<AssessmentResult | null>(null);
-  const [assessmentStatus, setAssessmentStatus] = useState<"idle" | "checking" | "fallback">(
-    "idle"
-  );
+  const [assessmentStatus, setAssessmentStatus] = useState<
+    "idle" | "checking" | "fallback"
+  >("idle");
   const [completed, setCompleted] = useState<Record<string, number>>({});
   const [drillWindowStart, setDrillWindowStart] = useState(0);
+  const [generatedDrillId, setGeneratedDrillId] = useState<string | null>(null);
+  const [generationStatus, setGenerationStatus] = useState<
+    "idle" | "checking" | "error"
+  >("idle");
+
   const visibleDrillCount = 4;
 
   useEffect(() => {
@@ -195,13 +198,18 @@ function App() {
 
   const activeDrill = useMemo(
     () => drills.find((drill) => drill.id === activeDrillId) ?? drills[0],
-    [activeDrillId]
+    [activeDrillId, drills]
   );
 
-  const visibleDrills = Array.from({ length: Math.min(visibleDrillCount, drills.length) }, (_, index) => {
-    const drillIndex = (drillWindowStart + index) % drills.length;
-    return drills[drillIndex];
-  });
+  const isGeneratedDrill = activeDrill.id.startsWith("GEN-");
+
+  const visibleDrills = Array.from(
+    { length: Math.min(visibleDrillCount, drills.length) },
+    (_, index) => {
+      const drillIndex = (drillWindowStart + index) % drills.length;
+      return drills[drillIndex];
+    }
+  );
 
   function shiftDrillWindow(direction: "up" | "down") {
     setDrillWindowStart((current) => {
@@ -212,22 +220,24 @@ function App() {
       return (current + 1) % drills.length;
     });
   }
-  const [generatedDrillId, setGeneratedDrillId] = useState<string | null>(null);
-  const [generationStatus, setGenerationStatus] = useState<"idle" | "checking" | "error">("idle");
 
   const score = assessment?.score ?? getScore(activeDrill, selectedDecision);
+
   const visibleAgentSteps =
-  assessment?.orchestration?.steps.map((step) => ({
-    label: step.agent,
-    detail: step.purpose,
-    meta: step.mode ?? step.risk_level ?? step.verdict ?? "",
-  })) ??
-  fallbackAgentSteps.map((step) => ({
-    label: "Demo trace",
-    detail: step,
-    meta: "static fallback",
-  }));
-  
+    assessment?.orchestration?.steps.map((step) => ({
+      label: step.agent,
+      detail: step.purpose,
+      meta: step.mode ?? step.risk_level ?? step.verdict ?? "",
+    })) ??
+    fallbackAgentSteps.map((step, index) => ({
+      label: "Demo trace",
+      detail:
+        index === 0 && isGeneratedDrill
+          ? "Scenario Director Agent generated this synthetic drill live using the configured Foundry model."
+          : step,
+      meta: index === 0 && isGeneratedDrill ? "runtime generated" : "static fallback",
+    }));
+
   const isBest = selectedDecision === activeDrill.bestDecision;
   const isUnsafe = selectedDecision
     ? activeDrill.unsafeDecisions.includes(selectedDecision)
@@ -235,12 +245,15 @@ function App() {
 
   const averageScore = useMemo(() => {
     const scores = Object.values(completed);
+
     if (selectedDecision) {
       const simulated = { ...completed, [activeDrill.id]: score };
       const values = Object.values(simulated);
       return Math.round(values.reduce((sum, item) => sum + item, 0) / values.length);
     }
+
     if (!scores.length) return 78;
+
     return Math.round(scores.reduce((sum, item) => sum + item, 0) / scores.length);
   }, [activeDrill.id, completed, score, selectedDecision]);
 
@@ -284,6 +297,19 @@ function App() {
       setAssessmentStatus("fallback");
     }
   }
+
+  function handleNextDrill() {
+    const currentIndex = drills.findIndex((drill) => drill.id === activeDrill.id);
+    const nextIndex = (currentIndex + 1) % drills.length;
+    const next = drills[nextIndex];
+
+    setActiveDrillId(next.id);
+    setDrillWindowStart(nextIndex);
+    setSelectedDecision(null);
+    setAssessment(null);
+    setAssessmentStatus("idle");
+  }
+
   async function handleGenerateDrill() {
     if (generationStatus === "checking") {
       return;
@@ -309,17 +335,6 @@ function App() {
     } catch {
       setGenerationStatus("error");
     }
-  }
-  function handleNextDrill() {
-    const currentIndex = drills.findIndex((drill) => drill.id === activeDrill.id);
-    const nextIndex = (currentIndex + 1) % drills.length;
-    const next = drills[nextIndex];
-
-    setActiveDrillId(next.id);
-    setDrillWindowStart(nextIndex);
-    setSelectedDecision(null);
-    setAssessment(null);
-    setAssessmentStatus("idle");
   }
 
   return (
@@ -359,6 +374,7 @@ function App() {
             <Brain size={17} />
             <span>Simulation Drills</span>
           </div>
+
           <button
             className="generate-drill-button"
             type="button"
@@ -378,6 +394,7 @@ function App() {
           {generationStatus === "error" && (
             <p className="generate-error">Could not generate a new drill. Try again.</p>
           )}
+
           <button
             className="drill-scroll-button"
             type="button"
@@ -410,6 +427,7 @@ function App() {
               )}
             </button>
           ))}
+
           <button
             className="drill-scroll-button"
             type="button"
@@ -422,9 +440,18 @@ function App() {
 
         <section className="panel main-drill">
           <div className="status-row">
-            <span className={`severity ${activeDrill.severity.toLowerCase()}`}>
-              {activeDrill.severity} risk
-            </span>
+            <div className="status-badges">
+              <span className={`severity ${activeDrill.severity.toLowerCase()}`}>
+                {activeDrill.severity} risk
+              </span>
+
+              {isGeneratedDrill && (
+                <span className="generated-drill-badge">
+                  AI-generated drill · runtime synthetic
+                </span>
+              )}
+            </div>
+
             <span>{activeDrill.department} scenario</span>
           </div>
 
@@ -438,6 +465,17 @@ function App() {
             </div>
             <p>{activeDrill.recommendation}</p>
           </div>
+
+          {isGeneratedDrill && (
+            <div className="generated-drill-note">
+              <strong>Scenario Director Agent</strong>
+              <p>
+                This drill was generated live by the backend Scenario Director Agent and
+                is assessed through the same Foundry IQ grounding, Risk Critic, and
+                Assessment Agent pipeline.
+              </p>
+            </div>
+          )}
 
           <div className="decision-row">
             {decisions.map((decision) => (
@@ -487,6 +525,7 @@ function App() {
               )}
               <h3>{getResultTitle(activeDrill, selectedDecision)}</h3>
             </div>
+
             <p>{assessment?.explanation ?? getResultText(activeDrill, selectedDecision)}</p>
 
             {selectedDecision && (
@@ -494,7 +533,11 @@ function App() {
                 {assessmentStatus === "checking"
                   ? "Assessment Agent checking backend multi-agent response..."
                   : assessment
-                  ? `Scored by backend ${assessment.agent} with ${assessment.risk_critique?.agent ?? "Risk Critic Agent"} and ${assessment.evidence?.agent ?? "Evidence Grounding Agent"}.`
+                  ? `Scored by backend ${assessment.agent} with ${
+                      assessment.risk_critique?.agent ?? "Risk Critic Agent"
+                    } and ${
+                      assessment.evidence?.agent ?? "Evidence Grounding Agent"
+                    }.`
                   : "Using local fallback scoring because backend assessment was unavailable."}
               </p>
             )}
@@ -514,7 +557,8 @@ function App() {
               </div>
 
               <p className="muted">
-                Full grounded explanation returned by the Microsoft Foundry Evidence Grounding Agent.
+                Full grounded explanation returned by the Microsoft Foundry Evidence
+                Grounding Agent.
               </p>
 
               <div className="foundry-output-body">

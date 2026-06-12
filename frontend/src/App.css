@@ -917,3 +917,47 @@ p {
   font-size: 0.68rem;
   line-height: 1.5;
 }
+
+.status-badges {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  flex-wrap: wrap;
+}
+
+.generated-drill-badge {
+  display: inline-flex;
+  border: 1px solid rgba(154, 232, 255, 0.34);
+  border-radius: 12px;
+  padding: 8px 11px;
+  background: rgba(154, 232, 255, 0.08);
+  color: var(--cyan);
+  font-size: 10px;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.generated-drill-note {
+  margin: -0.5rem 0 1.2rem;
+  border: 1px solid rgba(154, 232, 255, 0.22);
+  border-radius: 13px;
+  padding: 14px 16px;
+  background: rgba(154, 232, 255, 0.055);
+}
+
+.generated-drill-note strong {
+  display: block;
+  margin-bottom: 0.35rem;
+  color: var(--cyan);
+  font-size: 0.78rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.generated-drill-note p {
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.82rem;
+  line-height: 1.6;
+}
